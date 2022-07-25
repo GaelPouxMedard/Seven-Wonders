@@ -105,7 +105,6 @@ class Jeu:
                 idx = np.random.choice(len(actions))
                 action_choisie = actions[idx]
                 actions_joueurs.append(action_choisie)
-                #print(joueur.id, action_choisie[0], joueur.main[action_choisie[1]].nom, [[act, joueur.main[idx].nom, cout] for act, idx, cout in actions])
             else:
                 actions_joueurs.append(action_saisie)
 
@@ -113,7 +112,6 @@ class Jeu:
         for joueur, action_choisie in zip(self.joueurs, actions_joueurs):
             act, cible, cout = action_choisie
             extra_action = joueur.acte(act, cible, cout, self)
-            #print(joueur.id, extra_action, action_choisie[0], action_choisie[1].nom, joueur.merveille.nom, joueur.etage_merveille)
 
             if cst.carte_defausse in extra_action:
                 actions = []
