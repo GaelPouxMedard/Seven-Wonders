@@ -32,6 +32,7 @@ class Jeu:
         idx_merveille = np.random.choice(list(range(7)), nombre_joueurs, replace=False)*2
         idx_jour_nuit = np.random.choice([0,1], nombre_joueurs, replace=True)
         idx_merveille += idx_jour_nuit
+        idx_merveille[0] = 10  # TODO ENLEVER =================================================================================
         merveilles = [merveilles[idx] for idx in idx_merveille]
 
         for i in range(nombre_joueurs):
@@ -96,7 +97,6 @@ class Jeu:
     def run_tour(self, action_saisie = None):
         actions_joueurs = []
         for i, joueur in enumerate(self.joueurs):
-            print(len(joueur.main), self.dernier_tour+1-self.tour+1)
             assert len(joueur.main) == self.dernier_tour+1-self.tour+1
 
             if i != 0 or action_saisie is None:
@@ -108,18 +108,28 @@ class Jeu:
             else:
                 actions_joueurs.append(action_saisie)
 
-        for joueur, action_choisie in zip(self.joueurs, actions_joueurs):
+        for i_joueur, (joueur, action_choisie) in enumerate(zip(self.joueurs, actions_joueurs)):
             act, cible, cout = action_choisie
             extra_action = joueur.acte(act, cible, cout, self)
+            print(extra_action, self.GUI, self.auto, i_joueur, joueur.id, joueur.cite.carte_defausse)
 
             if cst.carte_defausse in extra_action:
-                actions = []
-                for carte in self.defausse:
-                    actions.append((cst.act_construire_batiment, carte, 0))
-                idx = np.random.choice(len(actions))
-                act, cible, cout = actions[idx]
-                joueur.main.append(cible)
-                joueur.acte(act, cible, cout, self)
+                # actions = []
+                # for carte in self.defausse:
+                #     actions.append((cst.act_construire_batiment, carte, 0))
+                # idx = np.random.choice(len(actions))
+                # act, cible, cout = actions[idx]
+                # joueur.main.append(cible)
+                # joueur.acte(act, cible, cout, self)
+
+                if self.GUI and not self.auto and i_joueur == 0:
+                    size_screen = self.renderer.screen.get_size()
+                    props = np.array([cst.prop_largeur_choix_defausse, cst.prop_hauteur_choix_defausse])
+                    marges = size_screen-(size_screen-props*size_screen)/2
+                    pg.draw.rect(self.renderer.screen, (0,0,0,128), (marges[0], marges[1], *size_screen*props))
+                    print("PROUT")
+                    time.sleep(10)
+
 
             if cst.jouer_derniere_carte in extra_action:
                 assert len(joueur.main)==1
@@ -312,7 +322,7 @@ class Jeu:
                     click = False
 
                 if len(change) > 0:
-                    print(change)
+                    #print(change)
                     self.renderer.render()
 
                     card_hovered = self.do_hover()
