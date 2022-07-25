@@ -108,7 +108,6 @@ class Jeu:
             else:
                 actions_joueurs.append(action_saisie)
 
-
         for joueur, action_choisie in zip(self.joueurs, actions_joueurs):
             act, cible, cout = action_choisie
             extra_action = joueur.acte(act, cible, cout, self)
