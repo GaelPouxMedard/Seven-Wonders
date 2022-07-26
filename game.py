@@ -3,6 +3,7 @@ import numpy as np
 import pygame as pg
 from utils import *
 from GUI import *
+from pygame import gfxdraw
 
 #np.random.seed(66+66)
 

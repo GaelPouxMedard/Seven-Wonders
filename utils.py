@@ -1,4 +1,5 @@
 import pygame as pg
+from pygame import *
 
 def shaded_image(image, color):
     m = pg.mask.from_surface(image, 0)

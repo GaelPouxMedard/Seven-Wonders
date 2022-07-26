@@ -32,7 +32,6 @@ class Jeu:
         idx_merveille = np.random.choice(list(range(7)), nombre_joueurs, replace=False)*2
         idx_jour_nuit = np.random.choice([0,1], nombre_joueurs, replace=True)
         idx_merveille += idx_jour_nuit
-        idx_merveille[0] = 10  # TODO ENLEVER =================================================================================
         merveilles = [merveilles[idx] for idx in idx_merveille]
 
         for i in range(nombre_joueurs):
@@ -111,24 +110,77 @@ class Jeu:
         for i_joueur, (joueur, action_choisie) in enumerate(zip(self.joueurs, actions_joueurs)):
             act, cible, cout = action_choisie
             extra_action = joueur.acte(act, cible, cout, self)
-            print(extra_action, self.GUI, self.auto, i_joueur, joueur.id, joueur.cite.carte_defausse)
 
-            if cst.carte_defausse in extra_action:
-                # actions = []
-                # for carte in self.defausse:
-                #     actions.append((cst.act_construire_batiment, carte, 0))
-                # idx = np.random.choice(len(actions))
-                # act, cible, cout = actions[idx]
-                # joueur.main.append(cible)
-                # joueur.acte(act, cible, cout, self)
-
-                if self.GUI and not self.auto and i_joueur == 0:
+            if cst.carte_defausse in extra_action and len(self.defausse)>=1:
+                if self.GUI and not self.auto and joueur.id == 0:
                     size_screen = self.renderer.screen.get_size()
                     props = np.array([cst.prop_largeur_choix_defausse, cst.prop_hauteur_choix_defausse])
-                    marges = size_screen-(size_screen-props*size_screen)/2
-                    pg.draw.rect(self.renderer.screen, (0,0,0,128), (marges[0], marges[1], *size_screen*props))
-                    print("PROUT")
-                    time.sleep(10)
+                    marges = (size_screen-props*size_screen)/2
+                    largeur_carte = (size_screen[0])/16
+                    hauteur_carte = largeur_carte*cst.hauteur_carte/cst.largeur_carte
+                    surface_fond = pg.Surface(size_screen, pg.SRCALPHA, 32)
+                    pg.draw.rect(surface_fond, (0,0,0,128), pg.Rect(*marges, *size_screen*props), border_radius=cst.border_radius)
+                    self.renderer.screen.blit(surface_fond, (0,0))
+                    surface_fond = self.renderer.screen.copy()
+                    i_large, i_haut = -1, -1
+                    for i, carte in enumerate(self.defausse):
+                        i_large += 1
+                        if i%15==0:
+                            i_haut += 1
+                            i_large = 0
+                        carte.pos = np.array([(i_large)*largeur_carte, marges[0] + i_haut*hauteur_carte])-np.array([-largeur_carte, 0])/2
+                        carte.unzoom = 1./cst.zoom_carte
+                        carte.is_clicked = False
+                        #carte.surface = pg.transform.smoothscale(carte.surface, (largeur_carte, hauteur_carte))
+                        carte.surface_screen = pg.transform.smoothscale(carte.surface, (largeur_carte, hauteur_carte))
+                        carte.surface_screen_zoomed = pg.transform.smoothscale(carte.surface, (largeur_carte*1.1, hauteur_carte*1.1))
+                        surface_fond.blit(carte.surface_screen, carte.pos)
+                        carte.rect = carte.surface_screen.get_rect(topleft=carte.pos)
+                        carte.masque = pg.mask.from_surface(carte.surface_screen)
+                    self.renderer.screen.blit(surface_fond, (0,0))
+                    pg.display.flip()
+
+                    click = False
+                    while True:
+                        event = pg.event.wait()
+                        if event.type == pg.QUIT:
+                            pg.quit()
+                            sys.exit()
+                        if event.type == pg.MOUSEBUTTONUP:
+                            if event.button == 1:
+                                click = True
+
+                        changes = set()
+                        changes = self.hover(changes, defausse=True)
+
+                        if click:
+                            changes = self.click(changes, defausse=True)
+                            click = False
+                        if len(changes) > 0:
+                            self.renderer.screen.blit(surface_fond, (0,0))
+
+                            card_hovered = self.do_hover(defausse=True)
+                            out, objet = self.do_click(defausse=True)
+                            if out=="card-clicked" and objet is not None:
+                                if objet in self.defausse:
+                                    act, cible, cout = (cst.act_construire_batiment, objet, 0)
+                                    self.defausse.remove(cible)
+                                    joueur.main.append(cible)
+                                    joueur.acte(act, cible, cout, self)
+                                    break
+
+                            pg.display.flip()
+
+
+                else:
+                    actions = []
+                    for carte in self.defausse:
+                        actions.append((cst.act_construire_batiment, carte, 0))
+                    idx = np.random.choice(len(actions))
+                    act, cible, cout = actions[idx]
+                    joueur.main.append(cible)
+                    self.defausse.remove(cible)
+                    joueur.acte(act, cible, cout, self)
 
 
             if cst.jouer_derniere_carte in extra_action:
@@ -166,6 +218,10 @@ class Jeu:
 
         # Fin âge
         if len(self.joueurs[0].main)<=1:
+            for joueur in self.joueurs:
+                for carte in joueur.main:
+                    self.defausse.append(carte)
+                    joueur.main.remove(carte)
             self.conflits_militaires()
             self.age += 1
             self.tour = 1
@@ -181,48 +237,82 @@ class Jeu:
     def reset(self):
         self.__init__(self.nombre_joueurs, self.cartes, self.merveilles, auto=self.auto, init_window=False)
 
-    def hover(self, changes):
-        for joueur in self.joueurs:
-            for carte in reversed(joueur.main+joueur.cite.batiments):
-                change_state = carte.check_hover()
-                for change in change_state: changes.add(change)
+    def hover(self, changes, defausse=False):
+        if not defausse:
+            for joueur in self.joueurs:
+                for carte in reversed(joueur.main+joueur.cite.batiments):
+                    change_state = carte.check_hover()
+                    for change in change_state: changes.add(change)
 
-            for etage in joueur.merveille.etages:
-                change_state = etage.check_hover()
+                for etage in joueur.merveille.etages:
+                    change_state = etage.check_hover()
+                    for change in change_state: changes.add(change)
+        else:
+            for carte in reversed(self.defausse):
+                change_state = carte.check_hover()
                 for change in change_state: changes.add(change)
 
         return changes
 
-
-    def do_hover(self):
+    def do_hover(self, defausse = False):
         one_card_hovered = False
-        for joueur in self.joueurs:
-            for carte in reversed(joueur.main+joueur.cite.batiments):
+        if not defausse:
+            for joueur in self.joueurs:
+                for carte in reversed(joueur.main+joueur.cite.batiments):
+                    if carte.hovered:
+                        if not one_card_hovered:
+                            carte.zoom(self.renderer.screen)
+                            one_card_hovered = True
+
+                for etage in joueur.merveille.etages:
+                    if etage.hovered:
+                        etage.zoom(self.renderer.screen)
+        else:
+            for carte in reversed(self.defausse):
                 if carte.hovered:
                     if not one_card_hovered:
                         carte.zoom(self.renderer.screen)
                         one_card_hovered = True
 
-            for etage in joueur.merveille.etages:
-                if etage.hovered:
-                    etage.zoom(self.renderer.screen)
         return one_card_hovered
 
-    def click(self, changes):
-        for joueur in self.joueurs:
-            for carte in reversed(joueur.main+joueur.cite.batiments):
-                change_state = carte.check_hover()
+    def click(self, changes, defausse = False):
+        if not defausse:
+            for joueur in self.joueurs:
+                for carte in reversed(joueur.main+joueur.cite.batiments):
+                    change_state = carte.check_hover()
 
-                if carte.is_clicked:
-                    for act in carte.buttons:
-                        if carte.buttons[act].hovered is not None:
-                            if carte.buttons[act].hovered:
-                                if not carte.buttons[act].is_clicked: changes.add(cst.click_bouton)
-                                carte.buttons[act].is_clicked = True
-                            else:
-                                if carte.buttons[act].is_clicked: changes.add(cst.click_bouton)
-                                carte.buttons[act].is_clicked = False
+                    if carte.is_clicked:
+                        for act in carte.buttons:
+                            if carte.buttons[act].hovered is not None:
+                                if carte.buttons[act].hovered:
+                                    if not carte.buttons[act].is_clicked: changes.add(cst.click_bouton)
+                                    carte.buttons[act].is_clicked = True
+                                else:
+                                    if carte.buttons[act].is_clicked: changes.add(cst.click_bouton)
+                                    carte.buttons[act].is_clicked = False
 
+                    if carte.hovered:
+                        if not carte.is_clicked:
+                            changes.add(cst.click_carte)
+                        carte.is_clicked = True
+                    else:
+                        if carte.is_clicked: changes.add(cst.click_carte)
+                        carte.is_clicked = False
+
+
+
+                for etage in joueur.merveille.etages:
+                    change_state = etage.check_hover()
+                    if etage.hovered:
+                        if not etage.is_clicked: changes.add(cst.click_etage)
+                        etage.is_clicked = True
+                    else:
+                        if etage.is_clicked: changes.add(cst.click_etage)
+                        etage.is_clicked = False
+
+        else:
+            for carte in self.defausse:
                 if carte.hovered:
                     if not carte.is_clicked:
                         changes.add(cst.click_carte)
@@ -232,23 +322,26 @@ class Jeu:
                     carte.is_clicked = False
 
 
-
-            for etage in joueur.merveille.etages:
-                change_state = etage.check_hover()
-                if etage.hovered:
-                    if not etage.is_clicked: changes.add(cst.click_etage)
-                    etage.is_clicked = True
-                else:
-                    if etage.is_clicked: changes.add(cst.click_etage)
-                    etage.is_clicked = False
-
-
         return changes
 
-    def do_click(self):
+    def do_click(self, defausse = False):
         card_clicked, objet = False, None
-        for joueur in self.joueurs:
-            for carte in reversed(joueur.main+joueur.cite.batiments):
+        if not defausse:
+            for joueur in self.joueurs:
+                for carte in reversed(joueur.main+joueur.cite.batiments):
+                    if carte.is_clicked:
+                        card_clicked, objet = "card-clicked", carte
+
+                    for act in carte.buttons:
+                        if carte.buttons[act].is_clicked:
+                            card_clicked, objet = "card-and-button-clicked", carte.buttons[act]
+                            return card_clicked, carte
+
+                for etage in joueur.merveille.etages:
+                    if etage.is_clicked:
+                        card_clicked, objet = "etage-clicked", etage
+        else:
+            for carte in self.defausse:
                 if carte.is_clicked:
                     card_clicked, objet = "card-clicked", carte
 
@@ -257,9 +350,6 @@ class Jeu:
                         card_clicked, objet = "card-and-button-clicked", carte.buttons[act]
                         return card_clicked, carte
 
-            for etage in joueur.merveille.etages:
-                if etage.is_clicked:
-                    card_clicked, objet = "etage-clicked", etage
 
         return card_clicked, objet
 
@@ -270,7 +360,6 @@ class Jeu:
             merveille.draw()
             for etage in merveille.etages:
                 etage.draw()
-
 
     def run_game(self):
         running = True
@@ -289,7 +378,11 @@ class Jeu:
             self.renderer.render()
 
         while running:
-            for event in pg.event.get():
+            if not self.auto:
+                events = [pg.event.wait()]
+            else:
+                events = pg.event.get()
+            for event in events:
                 if event.type == pg.QUIT:
                     pg.quit()
                     sys.exit()

@@ -93,8 +93,8 @@ largeur_boutton_fac = 0.70
 hauteur_boutton_fac = 0.15
 pos_act = {}
 
-prop_largeur_choix_defausse = 0.9
-prop_hauteur_choix_defausse = 0.5
+prop_largeur_choix_defausse = 0.95
+prop_hauteur_choix_defausse = 0.95
 
 import numpy as np
 pos_act[act_construire_batiment] = np.array((0.4*largeur_carte, 0.5*hauteur_carte))
