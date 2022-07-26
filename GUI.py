@@ -8,12 +8,16 @@ class Renderer():
     def __init__(self, jeu):
         self.jeu = jeu
         pg.init()
+        # self.screensize = np.array((ctypes.windll.user32.GetSystemMetrics(0), ctypes.windll.user32.GetSystemMetrics(1)))
+        # self.screen = pg.Surface(self.screensize*10, pg.SRCALPHA, 32)
+        # self.window = pg.display.set_mode((0,0), pg.RESIZABLE)
         self.screen = pg.display.set_mode((0,0), pg.RESIZABLE)
         if sys.platform == "win32":
             HWND = pg.display.get_wm_info()['window']
             SW_MAXIMIZE = 3
             ctypes.windll.user32.ShowWindow(HWND, SW_MAXIMIZE)
-        self.background = pg.image.load("Images/Table.jpg")
+
+        self.background = pg.transform.smoothscale(pg.image.load("Images/Table.jpg"), np.array(pg.display.get_surface().get_size()))
         self.init_background()
 
     def init_background(self):

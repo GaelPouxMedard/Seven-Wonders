@@ -385,7 +385,7 @@ merveille.effet = effet
 etage_1 = Etage()
 etage_1.cout_ressource[cst.pierre] = 2
 effet_1 = Effet()
-effet_1.carte_defausse = True
+effet_1.jouer_derniere_carte = True
 etage_1.effet = effet_1
 merveille.etages.append(etage_1)
 etage_2 = Etage()

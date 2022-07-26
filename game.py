@@ -466,8 +466,9 @@ class Joueur:
             if self.cite.carte_defausse:
                 extra_action.append(cst.carte_defausse)
                 self.cite.carte_defausse = None
-            if self.cite.jouer_derniere_carte and jeu.dernier_tour==jeu.tour:
-                extra_action.append(cst.jouer_derniere_carte)
+
+        if self.cite.jouer_derniere_carte and jeu.dernier_tour==jeu.tour:
+            extra_action.append(cst.jouer_derniere_carte)
 
         self.main.remove(cible)
 

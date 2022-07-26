@@ -96,7 +96,7 @@ class Jeu:
     def run_tour(self, action_saisie = None):
         actions_joueurs = []
         for i, joueur in enumerate(self.joueurs):
-            assert len(joueur.main) == self.dernier_tour+1-self.tour+1
+            assert (len(joueur.main) == self.dernier_tour+1-self.tour+1) or (len(joueur.main) == 1 and joueur.cite.jouer_derniere_carte)
 
             if i != 0 or action_saisie is None:
                 actions = joueur.actions_possibles(self)
@@ -107,10 +107,13 @@ class Jeu:
             else:
                 actions_joueurs.append(action_saisie)
 
+        extra_actions = []
         for i_joueur, (joueur, action_choisie) in enumerate(zip(self.joueurs, actions_joueurs)):
             act, cible, cout = action_choisie
             extra_action = joueur.acte(act, cible, cout, self)
+            extra_actions.append(extra_action)
 
+        for i_joueur, (joueur, extra_action) in enumerate(zip(self.joueurs, extra_actions)):
             if cst.carte_defausse in extra_action and len(self.defausse)>=1:
                 if self.GUI and not self.auto and joueur.id == 0:
                     size_screen = self.renderer.screen.get_size()
@@ -133,12 +136,12 @@ class Jeu:
                         carte.is_clicked = False
                         #carte.surface = pg.transform.smoothscale(carte.surface, (largeur_carte, hauteur_carte))
                         carte.surface_screen = pg.transform.smoothscale(carte.surface, (largeur_carte, hauteur_carte))
-                        carte.surface_screen_zoomed = pg.transform.smoothscale(carte.surface, (largeur_carte*1.1, hauteur_carte*1.1))
+                        carte.surface_screen_zoomed = pg.transform.smoothscale(carte.surface, (largeur_carte*1.3, hauteur_carte*1.3))
                         surface_fond.blit(carte.surface_screen, carte.pos)
                         carte.rect = carte.surface_screen.get_rect(topleft=carte.pos)
                         carte.masque = pg.mask.from_surface(carte.surface_screen)
                     self.renderer.screen.blit(surface_fond, (0,0))
-                    pg.display.flip()
+                    self.flip()
 
                     click = False
                     while True:
@@ -169,8 +172,7 @@ class Jeu:
                                     joueur.acte(act, cible, cout, self)
                                     break
 
-                            pg.display.flip()
-
+                            self.flip()
 
                 else:
                     actions = []
@@ -182,15 +184,77 @@ class Jeu:
                     self.defausse.remove(cible)
                     joueur.acte(act, cible, cout, self)
 
-
             if cst.jouer_derniere_carte in extra_action:
                 assert len(joueur.main)==1
 
-                actions = joueur.actions_possibles(self)
+                auto_temp = False
+                if self.GUI and not self.auto and joueur.id == 0:
+                    action = None
+                    click = False
+                    do_flip = False
+                    play_round = False
+                    self.renderer.render()
+                    self.renderer.clean()
+                    self.flip()
 
-                idx = np.random.choice(len(actions))
-                act, cible, cout = actions[idx]
-                joueur.acte(act, cible, cout, self)
+                    while True:
+                        events = [pg.event.wait()]
+                        for event in events:
+                            if event.type == pg.QUIT:
+                                pg.quit()
+                                sys.exit()
+                            if event.type == pg.KEYDOWN:
+                                if event.key == pg.K_RIGHT:
+                                    auto_temp = True
+                                    break
+                            if event.type == pg.MOUSEBUTTONUP:
+                                if event.button == 1:
+                                    click = True
+                        if auto_temp: break
+
+                        changes = set()
+                        change = self.hover(changes)
+                        if click:
+                            change = self.click(changes)
+                            click = False
+
+                        if len(change) > 0:
+                            self.renderer.render()
+                            card_hovered = self.do_hover()
+                            out, objet = self.do_click()
+                            if out=="card-clicked" and objet is not None:
+                                if objet in self.joueurs[0].main: shade = True
+                                else: shade = False
+                                objet.clicked(self.renderer.screen, shade)
+                                if objet in self.joueurs[0].main:
+                                    self.joueurs[0].actions_possibles(self)
+                                    objet.update_buttons(self.joueurs[0].liste_actions_possibles)
+                                    objet.blit_buttons(self.renderer.screen)
+                                    objet.do_hover_boutons(self.renderer.screen)
+                            elif out=="card-and-button-clicked" and objet is not None:
+                                action = objet.do_click_boutons(self.renderer.screen)
+                                play_round = True
+                            elif out=="etage-clicked" and objet is not None:
+                                objet.clicked(self.renderer.screen, shade=False)
+
+                            do_flip = True
+
+                        if play_round:
+                            act, cible, cout = action
+                            joueur.acte(act, cible, cout, self)
+                            break
+
+                        if do_flip:
+                            self.flip()
+                            do_flip = False
+
+                if not (self.GUI and not self.auto and joueur.id == 0) or auto_temp:
+                    actions = joueur.actions_possibles(self)
+
+                    idx = np.random.choice(len(actions))
+                    act, cible, cout = actions[idx]
+                    joueur.acte(act, cible, cout, self)
+
 
         if self.age == 1 or self.age == 3:
             main_temp = self.joueurs[0].main
@@ -361,11 +425,17 @@ class Jeu:
             for etage in merveille.etages:
                 etage.draw()
 
+    def flip(self):
+        # toblit = pg.transform.scale(self.renderer.screen, pg.display.get_surface().get_size())
+        # self.renderer.window.blit(toblit, (0,0))
+        pg.display.flip()
+
     def run_game(self):
         running = True
         self.game_ended = False
         last = 0
         play_round = False
+        auto_temp = False
         click = False
         do_flip = True
         action = None
@@ -388,13 +458,17 @@ class Jeu:
                     sys.exit()
                 if event.type == pg.KEYDOWN:
                     if event.key == pg.K_RIGHT:
-                        play_round = True
+                        self.auto = True
+                        auto_temp = True
                 if event.type == pg.MOUSEBUTTONUP:
                     if event.button == 1:
                         click = True
 
 
             if self.auto:
+                if auto_temp:
+                    self.auto = False
+                    auto_temp = False
                 now = time.time()
                 if now - last >= self.time_wait:
                     last = now
@@ -415,7 +489,6 @@ class Jeu:
                     click = False
 
                 if len(change) > 0:
-                    #print(change)
                     self.renderer.render()
 
                     card_hovered = self.do_hover()
@@ -449,7 +522,7 @@ class Jeu:
 
 
             if do_flip:
-                pg.display.flip()
+                self.flip()
                 do_flip = False
 
             if self.game_ended:
