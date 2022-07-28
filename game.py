@@ -460,7 +460,8 @@ class Joueur:
             # Construction
             self.tresor -= cout
             effet = self.merveille.etages[self.etage_merveille].effet
-            self.merveille.etages[self.etage_merveille].draw(done=True)
+            self.merveille.etages[self.etage_merveille].done = True
+            self.merveille.etages[self.etage_merveille].draw()
             self.etage_merveille += 1
 
             self.appliquer_effets(effet, jeu, cst.merveille)
@@ -537,7 +538,7 @@ class Carte:
         draw_manual = False
         epaisseur_ligne_sep = 4
 
-        if not draw_manual and self.age==1 and True:
+        if not draw_manual:
             self.surface = pg.image.load(f"Images/Cartes/Age {self.age}/{self.nom.replace('-', '_').capitalize()}.png")
             self.surface = pg.transform.smoothscale(self.surface, (cst.largeur_carte, cst.hauteur_carte))
             pg.draw.rect(self.surface, pg.Color("black"), pg.Rect(0, 0, cst.largeur_carte, cst.hauteur_carte), int(epaisseur_ligne_sep*cst.scale_cartes/60), border_radius=int(0.55*cst.border_radius))
@@ -756,6 +757,7 @@ class Etage:
         self.nom = "Etage"
         self.cout_ressource = {cst.bois: 0, cst.argile: 0, cst.pierre: 0, cst.fer: 0, cst.tissu: 0, cst.verre: 0, cst.parchemin: 0, cst.argent: 0}
         self.effet = None
+        self.done = False
 
         self.surface = None
         self.surface_screen = None
@@ -767,14 +769,13 @@ class Etage:
         self.unzoom = 1
         self.is_clicked = False
         
-    def draw(self, done=False):
+    def draw(self):
         prop_hauteur_etage = cst.prop_hauteur_etage
         self.surface = pg.Surface((cst.largeur_carte, (cst.hauteur_carte)*prop_hauteur_etage), pg.SRCALPHA, 32)
         pg.draw.rect(self.surface, pg.Color(pg.Color("white")), pg.Rect(0, 0, cst.largeur_carte, (cst.hauteur_carte)*prop_hauteur_etage), border_top_left_radius=cst.border_radius, border_top_right_radius=cst.border_radius)
 
-        if not done:
+        if not self.done:
             self.surface = shaded_image(self.surface, (255,255,255,120))
-
 
         pg.draw.rect(self.surface, pg.Color(pg.Color("black")), pg.Rect(0, 0, cst.largeur_carte, (cst.hauteur_carte)*prop_hauteur_etage), int(3*cst.scale_cartes/30), border_top_left_radius=cst.border_radius, border_top_right_radius=cst.border_radius)
 
@@ -802,13 +803,16 @@ class Etage:
         dims_base = np.array([self.surface_screen.get_width(), self.surface_screen.get_height()])
 
         if self.surface_screen_zoomed is not None:
+            if not self.done:
+                self.surface_screen_zoomed = shaded_image(self.surface_screen_zoomed, (255,255,255,120))
             screen.blit(pg.transform.rotozoom(self.surface_screen_zoomed, 0, cst.zoom_carte*self.unzoom), self.pos-dims/2+dims_base/2)
-
 
     def clicked(self, screen, shade=True):
         dims = np.array([self.surface_screen_zoomed.get_width(), self.surface_screen_zoomed.get_height()])*cst.zoom_carte*self.unzoom
         dims_base = np.array([self.surface_screen.get_width(), self.surface_screen.get_height()])
 
+        if not self.done:
+            self.surface_screen_zoomed = shaded_image(self.surface_screen_zoomed, (255,255,255,120))
         screen.blit(pg.transform.rotozoom(self.surface_screen_zoomed, 0, cst.zoom_carte*self.unzoom), self.pos-dims/2+dims_base/2)
 
         if self.surface_screen_zoomed is not None and shade:

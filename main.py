@@ -552,7 +552,7 @@ class Jeu:
 
 
 
-jeu = Jeu(7, cartes.paquet_cartes, cartes.merveilles, auto=False, GUI=True)
+jeu = Jeu(3, cartes.paquet_cartes, cartes.merveilles, auto=False, GUI=True)
 arr_scores = []
 
 Profiler = pprofile.Profile()

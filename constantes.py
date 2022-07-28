@@ -88,7 +88,7 @@ hauteur_merveille = hauteur_carte
 prop_hauteur_etage = 0.3
 facteur_arrondi_cartes = 20
 border_radius = int(facteur_arrondi_cartes*scale_cartes/30)
-zoom_carte = 5
+zoom_carte = 4
 
 largeur_boutton_fac = 0.70
 hauteur_boutton_fac = 0.15
@@ -107,16 +107,16 @@ pg.font.init()
 font = pg.font.SysFont("Arial", int(1*scale_cartes))
 
 images = {
-    fer: pg.image.load("Images/Fer.png"),
-    bois: pg.image.load("Images/Bois.png"),
-    pierre: pg.image.load("Images/Pierre.png"),
-    argile: pg.image.load("Images/Argile.png"),
-    verre: pg.image.load("Images/Verre.png"),
-    tissu: pg.image.load("Images/Tissu.png"),
-    parchemin: pg.image.load("Images/Parchemin.png"),
-    argent: pg.image.load("Images/Argent.png"),
-    militaire: pg.image.load("Images/Effets/Militaire.png"),
-    points: pg.image.load("Images/Effets/Victoire.png"),
+    fer: pg.image.load("Images/Elements_cartes/Ressources/Fer.png"),
+    bois: pg.image.load("Images/Elements_cartes/Ressources/Bois.png"),
+    pierre: pg.image.load("Images/Elements_cartes/Ressources/Pierre.png"),
+    argile: pg.image.load("Images/Elements_cartes/Ressources/Argile.png"),
+    verre: pg.image.load("Images/Elements_cartes/Ressources/Verre.png"),
+    tissu: pg.image.load("Images/Elements_cartes/Ressources/Tissu.png"),
+    parchemin: pg.image.load("Images/Elements_cartes/Ressources/Parchemin.png"),
+    argent: pg.image.load("Images/Elements_cartes/Effets/Argent.png"),
+    militaire: pg.image.load("Images/Elements_cartes/Effets/Militaire.png"),
+    points: pg.image.load("Images/Elements_cartes/Effets/Points victoire.png"),
 }
 
 scale_res = 0.1
