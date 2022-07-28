@@ -76,7 +76,6 @@ class Renderer():
 
         return excentricite, eloignement_facteur, zoom_facteur, angles_pos
 
-
     def render(self):
         self.init_background()
         nb_joueurs = self.jeu.nombre_joueurs
@@ -149,8 +148,7 @@ class Renderer():
                     carte_pos_plateau_rot = rot.dot(carte.pos_plateau)
                     carte.unzoom = unzoom
 
-
-                    carte.surface_screen = pg.transform.rotozoom(carte.surface, 0, unzoom)
+                    carte.surface_screen = pg.transform.smoothscale(carte.surface, np.array(carte.surface.get_size())*unzoom)
 
                     carte.surface_screen_zoomed, _ = rot_center(carte.surface, angle_rot_plateau*180/np.pi, pos_centre_carte)
                     carte.surface_screen, rot_rect = rot_center(carte.surface_screen, angle_rot_plateau*180/np.pi, pos_centre_carte)
@@ -172,7 +170,7 @@ class Renderer():
 
 
                 carte.unzoom = unzoom
-                carte.surface_screen = pg.transform.rotozoom(carte.surface, 0, unzoom)
+                carte.surface_screen = pg.transform.smoothscale(carte.surface, np.array(carte.surface.get_size())*unzoom)
                 carte.surface_screen_zoomed, _ = rot_center(carte.surface, angle_rot_plateau*180/np.pi, pos_centre_carte)
                 carte.surface_screen, rot_rect = rot_center(carte.surface_screen, angle_rot_plateau*180/np.pi, pos_centre_carte)
 
@@ -192,7 +190,7 @@ class Renderer():
                 merveille_pos_plateau_rot = rot.dot(joueur.merveille.pos_plateau)
 
 
-                joueur.merveille.surface_screen = pg.transform.rotozoom(joueur.merveille.surface, 0, unzoom)
+                joueur.merveille.surface_screen = pg.transform.smoothscale(joueur.merveille.surface, np.array(joueur.merveille.surface.get_size())*unzoom)
                 joueur.merveille.surface_screen, rot_rect = rot_center(joueur.merveille.surface_screen, angle_rot_plateau*180/np.pi, pos_centre_merveille)
 
                 joueur.merveille.pos = centre_screen+(pos_plateau_rot+merveille_pos_plateau_rot)*unzoom + shift_topleft_merveille
@@ -209,7 +207,7 @@ class Renderer():
                     etage_pos_plateau_rot = rot.dot(etage.pos_plateau)
 
                     etage.unzoom = unzoom
-                    etage.surface_screen = pg.transform.rotozoom(etage.surface, 0, unzoom)
+                    etage.surface_screen = pg.transform.smoothscale(etage.surface, np.array(etage.surface.get_size())*unzoom)
                     etage.surface_screen_zoomed, _ = rot_center(etage.surface, angle_rot_plateau*180/np.pi, pos_centre_etage)
                     etage.surface_screen, rot_rect = rot_center(etage.surface_screen, angle_rot_plateau*180/np.pi, pos_centre_etage)
 
@@ -242,8 +240,6 @@ class Renderer():
                 if etage.surface_screen is not None:
                     etage.rect = etage.surface_screen.get_rect(topleft=etage.pos)
                     etage.masque = pg.mask.from_surface(etage.surface_screen)
-
-
 
     def clean(self):
         for carte in self.jeu.cartes:

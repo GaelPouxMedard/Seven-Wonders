@@ -11,7 +11,7 @@ import time
 from GUI import Renderer
 
 class Jeu:
-    def __init__(self, nombre_joueurs, cartes, merveilles, auto=True, init_window=True):
+    def __init__(self, nombre_joueurs, cartes, merveilles, auto=True, init_window=True, GUI=True):
         # Jeu
         self.cartes = cartes
         self.merveilles = merveilles
@@ -25,9 +25,10 @@ class Jeu:
         self.age = 1
         self.game_ended = False
         self.dernier_tour = len([carte for carte in self.cartes if carte.age == 1 and carte.nb_joueurs <= self.nombre_joueurs])//self.nombre_joueurs - 1
+        self.cartes_initialisees = False
 
         self.auto = auto
-        self.time_wait = 0.1 #s
+        self.time_wait = 0.000001 #s
 
         idx_merveille = np.random.choice(list(range(7)), nombre_joueurs, replace=False)*2
         idx_jour_nuit = np.random.choice([0,1], nombre_joueurs, replace=True)
@@ -43,7 +44,7 @@ class Jeu:
             self.joueurs.append(joueur)
 
         # GUI
-        self.GUI = True
+        self.GUI = GUI
         if self.GUI and init_window:
             self.renderer = Renderer(self)
 
@@ -299,7 +300,26 @@ class Jeu:
                 self.renderer.end_game()
 
     def reset(self):
-        self.__init__(self.nombre_joueurs, self.cartes, self.merveilles, auto=self.auto, init_window=False)
+        self.joueurs = []
+        self.defausse = list()
+        self.scores = list()
+        self.scores_detail = list()
+        self.tour = 1
+        self.age = 1
+        self.game_ended = False
+
+        idx_merveille = np.random.choice(list(range(7)), self.nombre_joueurs, replace=False)*2
+        idx_jour_nuit = np.random.choice([0,1], self.nombre_joueurs, replace=True)
+        idx_merveille += idx_jour_nuit
+        merveilles = [self.merveilles[idx] for idx in idx_merveille]
+
+        for i in range(self.nombre_joueurs):
+            joueur = Joueur(i, main = [], merveille = merveilles[i], tresor=3)
+            joueur.appliquer_effets(merveilles[i].effet, self, cst.merveille)
+            if i==0: joueur.voisin_gauche = self.nombre_joueurs-1
+            if i==self.nombre_joueurs-1: joueur.voisin_droite = 0
+
+            self.joueurs.append(joueur)
 
     def hover(self, changes, defausse=False):
         if not defausse:
@@ -444,25 +464,28 @@ class Jeu:
         for joueur in self.joueurs:
             joueur.actions_possibles(self)
         if self.GUI:
-            self.draw_all()
+            if not self.cartes_initialisees:
+                self.cartes_initialisees = True
+                self.draw_all()
             self.renderer.render()
 
         while running:
-            if not self.auto:
-                events = [pg.event.wait()]
-            else:
-                events = pg.event.get()
-            for event in events:
-                if event.type == pg.QUIT:
-                    pg.quit()
-                    sys.exit()
-                if event.type == pg.KEYDOWN:
-                    if event.key == pg.K_RIGHT:
-                        self.auto = True
-                        auto_temp = True
-                if event.type == pg.MOUSEBUTTONUP:
-                    if event.button == 1:
-                        click = True
+            if self.GUI:
+                if not self.auto:
+                    events = [pg.event.wait()]
+                else:
+                    events = pg.event.get()
+                for event in events:
+                    if event.type == pg.QUIT:
+                        pg.quit()
+                        sys.exit()
+                    if event.type == pg.KEYDOWN:
+                        if event.key == pg.K_RIGHT:
+                            self.auto = True
+                            auto_temp = True
+                    if event.type == pg.MOUSEBUTTONUP:
+                        if event.button == 1:
+                            click = True
 
 
             if self.auto:
@@ -521,7 +544,7 @@ class Jeu:
                         do_flip = True
 
 
-            if do_flip:
+            if do_flip and self.GUI:
                 self.flip()
                 do_flip = False
 
@@ -530,24 +553,24 @@ class Jeu:
 
 
 
-jeu = Jeu(7, cartes.paquet_cartes, cartes.merveilles, auto=False)
+jeu = Jeu(3, cartes.paquet_cartes, cartes.merveilles, auto=False, GUI=True)
 arr_scores = []
 
-# Profiler = pprofile.Profile()
-# with Profiler:
-for i in range(10):
-    print("Jeu", i)
-    jeu.run_game()
+Profiler = pprofile.Profile()
+with Profiler:
+    for i in range(10):
+        print("Jeu", i)
+        jeu.run_game()
 
-    scores = jeu.scores
-    for s in scores:
-        arr_scores.append(s)
+        scores = jeu.scores
+        for s in scores:
+            arr_scores.append(s)
 
-    jeu.reset()
+        jeu.reset()
 
 pg.quit()
-# Profiler.dump_stats("Benchmark.txt")
-# pause()
+Profiler.dump_stats("Benchmark.txt")
+pause()
 
 plt.hist(arr_scores, bins=20)
 plt.show()

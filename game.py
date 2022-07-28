@@ -4,6 +4,7 @@ import pygame as pg
 from utils import *
 from GUI import *
 from pygame import gfxdraw
+from PIL import Image
 
 #np.random.seed(66+66)
 
@@ -533,31 +534,37 @@ class Carte:
         self.buttons = {}
 
     def draw(self):
-        color = pg.Color(cst.couleurs_rvb[self.couleur])
+        draw_manual = False
 
-        epaisseur_ligne_sep = 4
-        pos = [0,0]
+        if not draw_manual and self.age==1:
+            self.surface = pg.image.load(f"Images/Cartes/Age {self.age}/{self.nom.replace('-', '_').capitalize()}.png")
+            self.surface = pg.transform.smoothscale(self.surface, (cst.largeur_carte, cst.hauteur_carte))
+        else:
+            color = pg.Color(cst.couleurs_rvb[self.couleur])
 
-        self.surface = pg.Surface((cst.largeur_carte, cst.hauteur_carte), pg.SRCALPHA, 32)
+            epaisseur_ligne_sep = 4
+            pos = [0,0]
 
-        pg.draw.rect(self.surface, color, pg.Rect(pos[0], pos[1], cst.largeur_carte, cst.hauteur_carte), border_radius=cst.border_radius)
-        pg.draw.rect(self.surface, pg.Color("white"), pg.Rect(pos[0], pos[1]+cst.hauteur_carte*cst.propline_sep_carte, cst.largeur_carte, cst.hauteur_carte*(1-cst.propline_sep_carte)), border_bottom_left_radius=cst.border_radius, border_bottom_right_radius=cst.border_radius)
+            self.surface = pg.Surface((cst.largeur_carte, cst.hauteur_carte), pg.SRCALPHA, 32)
 
-        pg.draw.line(self.surface, pg.Color("black"), (pos[0], pos[1]+cst.hauteur_carte*cst.propline_sep_carte), (pos[0]+cst.largeur_carte*0.98, pos[1]+cst.hauteur_carte*cst.propline_sep_carte), width=int(epaisseur_ligne_sep*cst.scale_cartes/30))
-        pg.draw.rect(self.surface, pg.Color("black"), pg.Rect(pos[0], pos[1], cst.largeur_carte, cst.hauteur_carte), int(epaisseur_ligne_sep*cst.scale_cartes/30), border_radius=cst.border_radius)
+            pg.draw.rect(self.surface, color, pg.Rect(pos[0], pos[1], cst.largeur_carte, cst.hauteur_carte), border_radius=cst.border_radius)
+            pg.draw.rect(self.surface, pg.Color("white"), pg.Rect(pos[0], pos[1]+cst.hauteur_carte*cst.propline_sep_carte, cst.largeur_carte, cst.hauteur_carte*(1-cst.propline_sep_carte)), border_bottom_left_radius=cst.border_radius, border_bottom_right_radius=cst.border_radius)
 
-        i = 0
-        for res in self.cout_ressource:
-            for _ in range(self.cout_ressource[res]):
-                pos_img = (pos[0]+cst.largeur_carte*0.05, pos[1]+cst.hauteur_carte*(cst.propline_sep_carte+0.02)+i*cst.hauteur_carte*cst.scale_res)
-                self.surface.blit(cst.images_resources[res].convert_alpha(), pos_img)
+            pg.draw.line(self.surface, pg.Color("black"), (pos[0], pos[1]+cst.hauteur_carte*cst.propline_sep_carte), (pos[0]+cst.largeur_carte*0.98, pos[1]+cst.hauteur_carte*cst.propline_sep_carte), width=int(epaisseur_ligne_sep*cst.scale_cartes/30))
+            pg.draw.rect(self.surface, pg.Color("black"), pg.Rect(pos[0], pos[1], cst.largeur_carte, cst.hauteur_carte), int(epaisseur_ligne_sep*cst.scale_cartes/30), border_radius=cst.border_radius)
 
-                if res == cst.argent:
-                    font_argent = pg.font.SysFont("Arial", int(0.7*cst.scale_cartes))
-                    num_argent = font_argent.render(str(self.cout_ressource[res]), False, (0, 0, 0))
-                    self.surface.blit(num_argent, (pos[0]+cst.largeur_carte*0.097, pos[1]+cst.hauteur_carte*(cst.propline_sep_carte+0.03)+i*cst.hauteur_carte*cst.scale_res))
-                    break
-                i+=1
+            i = 0
+            for res in self.cout_ressource:
+                for _ in range(self.cout_ressource[res]):
+                    pos_img = (pos[0]+cst.largeur_carte*0.05, pos[1]+cst.hauteur_carte*(cst.propline_sep_carte+0.02)+i*cst.hauteur_carte*cst.scale_res)
+                    self.surface.blit(cst.images_resources[res].convert_alpha(), pos_img)
+
+                    if res == cst.argent:
+                        font_argent = pg.font.SysFont("Arial", int(0.7*cst.scale_cartes))
+                        num_argent = font_argent.render(str(self.cout_ressource[res]), False, (0, 0, 0))
+                        self.surface.blit(num_argent, (pos[0]+cst.largeur_carte*0.097, pos[1]+cst.hauteur_carte*(cst.propline_sep_carte+0.03)+i*cst.hauteur_carte*cst.scale_res))
+                        break
+                    i+=1
 
     def check_hover(self):
         pos = pg.mouse.get_pos()
