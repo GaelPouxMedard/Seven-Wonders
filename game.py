@@ -450,7 +450,6 @@ class Joueur:
             self.tresor -= cout
             self.cite.batiments.append(cible)
             self.cite.batiments_noms.append(cible.nom)
-            jeu.defausse.append(cible)
 
             # Effet
             effet = cible.effet
@@ -461,6 +460,7 @@ class Joueur:
             # Construction
             self.tresor -= cout
             effet = self.merveille.etages[self.etage_merveille].effet
+            self.merveille.etages[self.etage_merveille].draw(done=True)
             self.etage_merveille += 1
 
             self.appliquer_effets(effet, jeu, cst.merveille)
@@ -535,14 +535,17 @@ class Carte:
 
     def draw(self):
         draw_manual = False
+        epaisseur_ligne_sep = 4
 
-        if not draw_manual and self.age==1:
+        if not draw_manual and self.age==1 and True:
             self.surface = pg.image.load(f"Images/Cartes/Age {self.age}/{self.nom.replace('-', '_').capitalize()}.png")
             self.surface = pg.transform.smoothscale(self.surface, (cst.largeur_carte, cst.hauteur_carte))
+            pg.draw.rect(self.surface, pg.Color("black"), pg.Rect(0, 0, cst.largeur_carte, cst.hauteur_carte), int(epaisseur_ligne_sep*cst.scale_cartes/60), border_radius=int(0.55*cst.border_radius))
+
+
         else:
             color = pg.Color(cst.couleurs_rvb[self.couleur])
 
-            epaisseur_ligne_sep = 4
             pos = [0,0]
 
             self.surface = pg.Surface((cst.largeur_carte, cst.hauteur_carte), pg.SRCALPHA, 32)
@@ -557,7 +560,7 @@ class Carte:
             for res in self.cout_ressource:
                 for _ in range(self.cout_ressource[res]):
                     pos_img = (pos[0]+cst.largeur_carte*0.05, pos[1]+cst.hauteur_carte*(cst.propline_sep_carte+0.02)+i*cst.hauteur_carte*cst.scale_res)
-                    self.surface.blit(cst.images_resources[res].convert_alpha(), pos_img)
+                    self.surface.blit(cst.images[res].convert_alpha(), pos_img)
 
                     if res == cst.argent:
                         font_argent = pg.font.SysFont("Arial", int(0.7*cst.scale_cartes))
@@ -712,6 +715,42 @@ class Merveille:
         pg.draw.rect(self.surface, color, pg.Rect(0, 0, cst.largeur_merveille, cst.hauteur_carte), border_radius=cst.border_radius)
         pg.draw.rect(self.surface, pg.Color("black"), pg.Rect(0, 0, cst.largeur_merveille, cst.hauteur_carte), int(3*cst.scale_cartes/30), border_radius=cst.border_radius)
 
+    def draw_infos(self, joueur):
+        surface_avec_infos = self.surface.copy()
+
+        prop_hauteur_rect_or = 0.4
+        nb_infos = 3
+        img_argent = pg.transform.smoothscale(cst.images["argent"], np.array(cst.images["argent"].get_size())*8*prop_hauteur_rect_or)
+        img_militaire = pg.transform.smoothscale(cst.images["militaire"], np.array(cst.images["militaire"].get_size())*8*prop_hauteur_rect_or)
+        img_points = pg.transform.smoothscale(cst.images["points"], np.array(cst.images["points"].get_size())*8*prop_hauteur_rect_or)
+        nb_or_text = pg.font.SysFont("Comic sans", int(2*cst.scale_cartes)).render(f"{joueur.tresor}", True, (0,0,0))
+        nb_militaire_text = pg.font.SysFont("Comic sans", int(2*cst.scale_cartes)).render(f"{joueur.cite.puissance_militaire}", True, (0,0,0))
+        nb_points_text = pg.font.SysFont("Comic sans", int(2*cst.scale_cartes)).render(f"{joueur.cite.points_victoire}", True, (0,0,0))
+
+        cote_carre = cst.hauteur_merveille*prop_hauteur_rect_or
+        pg.draw.rect(surface_avec_infos, (210, 210, 210), pg.Rect(cst.largeur_merveille-cote_carre*nb_infos, 0, cote_carre*nb_infos, cote_carre), border_bottom_left_radius=cst.border_radius)
+        pg.draw.rect(surface_avec_infos, (0,0,0), pg.Rect(cst.largeur_merveille-cote_carre*nb_infos, 0, cote_carre*nb_infos, cote_carre), 4, border_bottom_left_radius=cst.border_radius)
+
+        centre_piece = np.array((cst.largeur_merveille-cote_carre*(1/2), cote_carre/2))
+        centre_militaire = np.array((cst.largeur_merveille-cote_carre*(1+1/2), cote_carre/2))
+        centre_points = np.array((cst.largeur_merveille-cote_carre*(2+1/2), cote_carre/2))
+        pos_argent = centre_piece-np.array(img_argent.get_size())/2
+        pos_militaire = centre_militaire-np.array(img_militaire.get_size())/2
+        pos_points = centre_points-np.array(img_points.get_size())/2
+        pos_txt_or = centre_piece-np.array(nb_or_text.get_size())/2
+        pos_txt_militaire = centre_militaire-np.array(nb_militaire_text.get_size())/2
+        pos_txt_points = centre_points-np.array(nb_points_text.get_size())/2
+
+        surface_avec_infos.blit(img_argent, pos_argent)
+        surface_avec_infos.blit(img_militaire, pos_militaire)
+        surface_avec_infos.blit(img_points, pos_points)
+
+        surface_avec_infos.blit(nb_or_text, pos_txt_or)
+        surface_avec_infos.blit(nb_militaire_text, pos_txt_militaire)
+        surface_avec_infos.blit(nb_points_text, pos_txt_points)
+        self.surface_avec_infos = surface_avec_infos
+        return self.surface_avec_infos
+
 class Etage:
     def __init__(self):
         self.nom = "Etage"
@@ -728,10 +767,15 @@ class Etage:
         self.unzoom = 1
         self.is_clicked = False
         
-    def draw(self):
+    def draw(self, done=False):
         prop_hauteur_etage = cst.prop_hauteur_etage
         self.surface = pg.Surface((cst.largeur_carte, (cst.hauteur_carte)*prop_hauteur_etage), pg.SRCALPHA, 32)
         pg.draw.rect(self.surface, pg.Color(pg.Color("white")), pg.Rect(0, 0, cst.largeur_carte, (cst.hauteur_carte)*prop_hauteur_etage), border_top_left_radius=cst.border_radius, border_top_right_radius=cst.border_radius)
+
+        if not done:
+            self.surface = shaded_image(self.surface, (255,255,255,120))
+
+
         pg.draw.rect(self.surface, pg.Color(pg.Color("black")), pg.Rect(0, 0, cst.largeur_carte, (cst.hauteur_carte)*prop_hauteur_etage), int(3*cst.scale_cartes/30), border_top_left_radius=cst.border_radius, border_top_right_radius=cst.border_radius)
 
     def check_hover(self):

@@ -189,11 +189,13 @@ class Renderer():
                 joueur.merveille.pos_plateau = np.array([debut_merveille, cst.hauteur_carte+cst.espace_entre_cartes_vertical])
                 merveille_pos_plateau_rot = rot.dot(joueur.merveille.pos_plateau)
 
+                joueur.merveille.draw_infos(joueur)
 
-                joueur.merveille.surface_screen = pg.transform.smoothscale(joueur.merveille.surface, np.array(joueur.merveille.surface.get_size())*unzoom)
+                joueur.merveille.surface_screen = pg.transform.smoothscale(joueur.merveille.surface_avec_infos, np.array(joueur.merveille.surface_avec_infos.get_size())*unzoom)
                 joueur.merveille.surface_screen, rot_rect = rot_center(joueur.merveille.surface_screen, angle_rot_plateau*180/np.pi, pos_centre_merveille)
 
                 joueur.merveille.pos = centre_screen+(pos_plateau_rot+merveille_pos_plateau_rot)*unzoom + shift_topleft_merveille
+
 
                 self.screen.blit(joueur.merveille.surface_screen, joueur.merveille.pos)
 

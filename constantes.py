@@ -24,6 +24,7 @@ couleurs = [marron, gris, jaune, vert, rouge, bleu, violet]
 
 merveille = "merveille"
 militaire = "militaire"
+points = "points"
 
 symbole_etoile = "etoile"
 symbole_masque = "masque"
@@ -87,7 +88,7 @@ hauteur_merveille = hauteur_carte
 prop_hauteur_etage = 0.3
 facteur_arrondi_cartes = 20
 border_radius = int(facteur_arrondi_cartes*scale_cartes/30)
-zoom_carte = 3
+zoom_carte = 5
 
 largeur_boutton_fac = 0.70
 hauteur_boutton_fac = 0.15
@@ -105,7 +106,7 @@ import pygame as pg
 pg.font.init()
 font = pg.font.SysFont("Arial", int(1*scale_cartes))
 
-images_resources = {
+images = {
     fer: pg.image.load("Images/Fer.png"),
     bois: pg.image.load("Images/Bois.png"),
     pierre: pg.image.load("Images/Pierre.png"),
@@ -114,11 +115,13 @@ images_resources = {
     tissu: pg.image.load("Images/Tissu.png"),
     parchemin: pg.image.load("Images/Parchemin.png"),
     argent: pg.image.load("Images/Argent.png"),
+    militaire: pg.image.load("Images/Effets/Militaire.png"),
+    points: pg.image.load("Images/Effets/Victoire.png"),
 }
 
 scale_res = 0.1
-for res in images_resources:
-    images_resources[res] = pg.transform.smoothscale(images_resources[res], (hauteur_carte*images_resources[res].get_width()*scale_res/images_resources[res].get_height(), hauteur_carte*scale_res))
+for res in images:
+    images[res] = pg.transform.smoothscale(images[res], (hauteur_carte*images[res].get_width()*scale_res/images[res].get_height(), hauteur_carte*scale_res))
     #images_resources[res] = pg.transform.rotozoom(images_resources[res], 0, 0.5)
 
 change_bouton = "change-bouton"

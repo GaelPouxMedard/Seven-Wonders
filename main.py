@@ -48,7 +48,6 @@ class Jeu:
         if self.GUI and init_window:
             self.renderer = Renderer(self)
 
-
     def get_cartes(self):
         cartes_age = [carte for carte in self.cartes if carte.age == self.age and carte.nb_joueurs <= self.nombre_joueurs]
         if self.age == 3:
@@ -553,7 +552,7 @@ class Jeu:
 
 
 
-jeu = Jeu(3, cartes.paquet_cartes, cartes.merveilles, auto=False, GUI=True)
+jeu = Jeu(7, cartes.paquet_cartes, cartes.merveilles, auto=False, GUI=True)
 arr_scores = []
 
 Profiler = pprofile.Profile()
