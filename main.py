@@ -30,23 +30,25 @@ class Jeu:
         self.auto = auto
         self.time_wait = 0.000001 #s
 
-        idx_merveille = np.random.choice(list(range(7)), nombre_joueurs, replace=False)*2
-        idx_jour_nuit = np.random.choice([0,1], nombre_joueurs, replace=True)
-        idx_merveille += idx_jour_nuit
-        merveilles = [merveilles[idx] for idx in idx_merveille]
-
-        for i in range(nombre_joueurs):
-            joueur = Joueur(i, main = [], merveille = merveilles[i], tresor=3)
-            joueur.appliquer_effets(merveilles[i].effet, self, cst.merveille)
-            if i==0: joueur.voisin_gauche = nombre_joueurs-1
-            if i==nombre_joueurs-1: joueur.voisin_droite = 0
-
-            self.joueurs.append(joueur)
-
         # GUI
         self.GUI = GUI
         if self.GUI and init_window:
             self.renderer = Renderer(self)
+
+    def init_partie(self):
+        idx_merveille = np.random.choice(list(range(7)), self.nombre_joueurs, replace=False)*2
+        idx_jour_nuit = np.random.choice([0,1], self.nombre_joueurs, replace=True)
+        idx_merveille += idx_jour_nuit
+        merveilles = [self.merveilles[idx] for idx in idx_merveille]
+
+        for i in range(self.nombre_joueurs):
+            joueur = Joueur(i, main = [], merveille = merveilles[i], tresor=3)
+            joueur.appliquer_effets(merveilles[i].effet, self, cst.merveille)
+            if i==0: joueur.voisin_gauche = self.nombre_joueurs-1
+            if i==self.nombre_joueurs-1: joueur.voisin_droite = 0
+
+            self.joueurs.append(joueur)
+        self.init_age()
 
     def get_cartes(self):
         cartes_age = [carte for carte in self.cartes if carte.age == self.age and carte.nb_joueurs <= self.nombre_joueurs]
@@ -269,6 +271,8 @@ class Jeu:
 
     def init_age(self):
         if self.tour == 1:
+            if self.age == 1:
+                self.reset()
             cartes_age = self.get_cartes()
 
             mains = np.array_split(cartes_age, self.nombre_joueurs)
@@ -459,7 +463,8 @@ class Jeu:
         do_flip = True
         action = None
 
-        self.init_age()
+        self.init_partie()
+
         for joueur in self.joueurs:
             joueur.actions_possibles(self)
         if self.GUI:

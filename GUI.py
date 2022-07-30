@@ -17,6 +17,7 @@ class Renderer():
             SW_MAXIMIZE = 3
             ctypes.windll.user32.ShowWindow(HWND, SW_MAXIMIZE)
 
+        self.background = pg.transform.smoothscale(pg.image.load("Images/Background.jpg"), np.array(pg.display.get_surface().get_size()))
         self.background = pg.transform.smoothscale(pg.image.load("Images/Table.jpg"), np.array(pg.display.get_surface().get_size()))
         self.init_background()
 

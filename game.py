@@ -709,12 +709,20 @@ class Merveille:
         self.masque = None
 
     def draw(self):
-        color = pg.Color(pg.Color("gray"))
+        draw_manual = False
 
-        self.surface = pg.Surface((cst.largeur_merveille, cst.hauteur_merveille), pg.SRCALPHA, 32)
+        if not draw_manual:
+            self.surface = pg.image.load(f"Images/Cartes/Merveilles/{self.nom.replace('-', '_').capitalize()}_étiré.png").convert_alpha()
+            self.surface = pg.transform.smoothscale(self.surface, (cst.largeur_merveille, cst.hauteur_merveille))
+            pg.draw.rect(self.surface, pg.Color("black"), pg.Rect(0, 0, cst.largeur_merveille, cst.hauteur_carte), int(3*cst.scale_cartes/30))
 
-        pg.draw.rect(self.surface, color, pg.Rect(0, 0, cst.largeur_merveille, cst.hauteur_carte), border_radius=cst.border_radius)
-        pg.draw.rect(self.surface, pg.Color("black"), pg.Rect(0, 0, cst.largeur_merveille, cst.hauteur_carte), int(3*cst.scale_cartes/30), border_radius=cst.border_radius)
+        else:
+            color = pg.Color(pg.Color("gray"))
+
+            self.surface = pg.Surface((cst.largeur_merveille, cst.hauteur_merveille), pg.SRCALPHA, 32)
+
+            pg.draw.rect(self.surface, color, pg.Rect(0, 0, cst.largeur_merveille, cst.hauteur_carte), border_radius=cst.border_radius)
+            pg.draw.rect(self.surface, pg.Color("black"), pg.Rect(0, 0, cst.largeur_merveille, cst.hauteur_carte), int(3*cst.scale_cartes/30), border_radius=cst.border_radius)
 
     def draw_infos(self, joueur):
         surface_avec_infos = self.surface.copy()
@@ -753,10 +761,11 @@ class Merveille:
         return self.surface_avec_infos
 
 class Etage:
-    def __init__(self):
-        self.nom = "Etage"
+    def __init__(self, nom_merveille=None, numero=None):
+        self.nom = nom_merveille
         self.cout_ressource = {cst.bois: 0, cst.argile: 0, cst.pierre: 0, cst.fer: 0, cst.tissu: 0, cst.verre: 0, cst.parchemin: 0, cst.argent: 0}
         self.effet = None
+        self.numero = numero
         self.done = False
 
         self.surface = None
@@ -770,15 +779,21 @@ class Etage:
         self.is_clicked = False
         
     def draw(self):
+        draw_manual = False
         prop_hauteur_etage = cst.prop_hauteur_etage
-        self.surface = pg.Surface((cst.largeur_carte, (cst.hauteur_carte)*prop_hauteur_etage), pg.SRCALPHA, 32)
-        pg.draw.rect(self.surface, pg.Color(pg.Color("white")), pg.Rect(0, 0, cst.largeur_carte, (cst.hauteur_carte)*prop_hauteur_etage), border_top_left_radius=cst.border_radius, border_top_right_radius=cst.border_radius)
+
+        if not draw_manual:
+            self.surface = pg.image.load(f"Images/Cartes/Merveilles/{self.nom.replace('-', '_').capitalize()}_{self.numero}.png").convert_alpha()
+            self.surface = pg.transform.smoothscale(self.surface, (cst.largeur_carte, (cst.hauteur_carte)*prop_hauteur_etage))
+
+        else:
+            self.surface = pg.Surface((cst.largeur_carte, (cst.hauteur_carte)*prop_hauteur_etage), pg.SRCALPHA, 32)
+            pg.draw.rect(self.surface, pg.Color(pg.Color("white")), pg.Rect(0, 0, cst.largeur_carte, (cst.hauteur_carte)*prop_hauteur_etage), border_top_left_radius=cst.border_radius, border_top_right_radius=cst.border_radius)
+            pg.draw.rect(self.surface, pg.Color(pg.Color("black")), pg.Rect(0, 0, cst.largeur_carte, (cst.hauteur_carte)*prop_hauteur_etage), int(3*cst.scale_cartes/30), border_top_left_radius=cst.border_radius, border_top_right_radius=cst.border_radius)
 
         if not self.done:
-            self.surface_shaded = shaded_image(self.surface, (255,255,255,120))
+            self.surface_shaded = shaded_image(self.surface, (0,0,0,170))
             self.surface.blit(self.surface_shaded, (0, 0))
-
-        pg.draw.rect(self.surface, pg.Color(pg.Color("black")), pg.Rect(0, 0, cst.largeur_carte, (cst.hauteur_carte)*prop_hauteur_etage), int(3*cst.scale_cartes/30), border_top_left_radius=cst.border_radius, border_top_right_radius=cst.border_radius)
 
     def check_hover(self):
         pos = pg.mouse.get_pos()
@@ -806,8 +821,7 @@ class Etage:
         if self.surface_screen_zoomed is not None:
             toblit = self.surface_screen_zoomed.copy()
             if not self.done:
-                surface_shaded = shaded_image(self.surface_screen_zoomed, (255,255,255,120))
-                toblit.blit(surface_shaded, (0, 0))
+                toblit.blit(self.surface_screen_zoomed, (0, 0))
             screen.blit(pg.transform.rotozoom(toblit, 0, cst.zoom_carte*self.unzoom), self.pos-dims/2+dims_base/2)
 
     def clicked(self, screen, shade=True):
@@ -816,8 +830,7 @@ class Etage:
 
         toblit = self.surface_screen_zoomed.copy()
         if not self.done:
-            surface_shaded = shaded_image(self.surface_screen_zoomed, (255,255,255,120))
-            toblit.blit(surface_shaded, (0, 0))
+            toblit.blit(self.surface_screen_zoomed, (0, 0))
         screen.blit(pg.transform.rotozoom(toblit, 0, cst.zoom_carte*self.unzoom), self.pos-dims/2+dims_base/2)
 
         if self.surface_screen_zoomed is not None and shade:
