@@ -724,21 +724,17 @@ class Merveille:
             pg.draw.rect(self.surface, color, pg.Rect(0, 0, cst.largeur_merveille, cst.hauteur_carte), border_radius=cst.border_radius)
             pg.draw.rect(self.surface, pg.Color("black"), pg.Rect(0, 0, cst.largeur_merveille, cst.hauteur_carte), int(3*cst.scale_cartes/30), border_radius=cst.border_radius)
 
-    def draw_infos(self, joueur):
-        surface_avec_infos = self.surface.copy()
 
-        prop_hauteur_rect_or = 0.4
-        nb_infos = 3
-        img_argent = pg.transform.smoothscale(cst.images["argent"], np.array(cst.images["argent"].get_size())*8*prop_hauteur_rect_or)
-        img_militaire = pg.transform.smoothscale(cst.images["militaire"], np.array(cst.images["militaire"].get_size())*8*prop_hauteur_rect_or)
-        img_points = pg.transform.smoothscale(cst.images["points"], np.array(cst.images["points"].get_size())*8*prop_hauteur_rect_or)
-        nb_or_text = pg.font.SysFont("Comic sans", int(2*cst.scale_cartes)).render(f"{joueur.tresor}", True, (0,0,0))
-        nb_militaire_text = pg.font.SysFont("Comic sans", int(2*cst.scale_cartes)).render(f"{joueur.cite.puissance_militaire}", True, (0,0,0))
-        nb_points_text = pg.font.SysFont("Comic sans", int(2*cst.scale_cartes)).render(f"{joueur.cite.points_victoire}", True, (0,0,0))
 
-        cote_carre = cst.hauteur_merveille*prop_hauteur_rect_or
-        pg.draw.rect(surface_avec_infos, (210, 210, 210), pg.Rect(cst.largeur_merveille-cote_carre*nb_infos, 0, cote_carre*nb_infos, cote_carre), border_bottom_left_radius=cst.border_radius)
-        pg.draw.rect(surface_avec_infos, (0,0,0), pg.Rect(cst.largeur_merveille-cote_carre*nb_infos, 0, cote_carre*nb_infos, cote_carre), 4, border_bottom_left_radius=cst.border_radius)
+        self.prop_hauteur_rect_or = 0.4
+        self.nb_infos = 3
+        img_argent = pg.transform.smoothscale(cst.images["argent"], np.array(cst.images["argent"].get_size())*8*self.prop_hauteur_rect_or)
+        img_militaire = pg.transform.smoothscale(cst.images["militaire"], np.array(cst.images["militaire"].get_size())*8*self.prop_hauteur_rect_or)
+        img_points = pg.transform.smoothscale(cst.images["points"], np.array(cst.images["points"].get_size())*8*self.prop_hauteur_rect_or)
+
+        cote_carre = cst.hauteur_merveille*self.prop_hauteur_rect_or
+        pg.draw.rect(self.surface, (210, 210, 210), pg.Rect(cst.largeur_merveille-cote_carre*self.nb_infos, 0, cote_carre*self.nb_infos, cote_carre), border_bottom_left_radius=cst.border_radius)
+        pg.draw.rect(self.surface, (0,0,0), pg.Rect(cst.largeur_merveille-cote_carre*self.nb_infos, 0, cote_carre*self.nb_infos, cote_carre), 4, border_bottom_left_radius=cst.border_radius)
 
         centre_piece = np.array((cst.largeur_merveille-cote_carre*(1/2), cote_carre/2))
         centre_militaire = np.array((cst.largeur_merveille-cote_carre*(1+1/2), cote_carre/2))
@@ -746,18 +742,34 @@ class Merveille:
         pos_argent = centre_piece-np.array(img_argent.get_size())/2
         pos_militaire = centre_militaire-np.array(img_militaire.get_size())/2
         pos_points = centre_points-np.array(img_points.get_size())/2
+
+        self.surface.blit(img_argent, pos_argent)
+        self.surface.blit(img_militaire, pos_militaire)
+        self.surface.blit(img_points, pos_points)
+        self.surface_avec_infos = self.surface.copy()
+
+    def draw_infos(self, joueur):
+        self.surface_avec_infos.blit(self.surface, (0,0))
+
+        cote_carre = cst.hauteur_merveille*self.prop_hauteur_rect_or
+
+        joueur.decompte_points()
+        nb_or_text = pg.font.SysFont("Comic sans", int(2*cst.scale_cartes)).render(f"{joueur.tresor}", True, (0,0,0))
+        nb_militaire_text = pg.font.SysFont("Comic sans", int(2*cst.scale_cartes)).render(f"{joueur.cite.puissance_militaire}", True, (0,0,0))
+        nb_points_text = pg.font.SysFont("Comic sans", int(2*cst.scale_cartes)).render(f"{joueur.points_total}", True, (0,0,0))
+
+
+        centre_piece = np.array((cst.largeur_merveille-cote_carre*(1/2), cote_carre/2))
+        centre_militaire = np.array((cst.largeur_merveille-cote_carre*(1+1/2), cote_carre/2))
+        centre_points = np.array((cst.largeur_merveille-cote_carre*(2+1/2), cote_carre/2))
         pos_txt_or = centre_piece-np.array(nb_or_text.get_size())/2
         pos_txt_militaire = centre_militaire-np.array(nb_militaire_text.get_size())/2
         pos_txt_points = centre_points-np.array(nb_points_text.get_size())/2
 
-        surface_avec_infos.blit(img_argent, pos_argent)
-        surface_avec_infos.blit(img_militaire, pos_militaire)
-        surface_avec_infos.blit(img_points, pos_points)
+        self.surface_avec_infos.blit(nb_or_text, pos_txt_or)
+        self.surface_avec_infos.blit(nb_militaire_text, pos_txt_militaire)
+        self.surface_avec_infos.blit(nb_points_text, pos_txt_points)
 
-        surface_avec_infos.blit(nb_or_text, pos_txt_or)
-        surface_avec_infos.blit(nb_militaire_text, pos_txt_militaire)
-        surface_avec_infos.blit(nb_points_text, pos_txt_points)
-        self.surface_avec_infos = surface_avec_infos
         return self.surface_avec_infos
 
 class Etage:

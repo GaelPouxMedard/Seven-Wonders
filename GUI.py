@@ -46,47 +46,52 @@ class Renderer():
         return angle_rot_plateau
 
     def distances_plateaux(self):
-        excentricite, eloignement_facteur, zoom_facteur, angles_pos = 0., 0., 0., None
+        excentricite, eloignement_facteur, zoom_facteur, angles_pos, fac_player = 0., 0., 0., None, 0.00025
         if self.jeu.nombre_joueurs==3:
             excentricite = 1.*self.screen.get_width()/self.screen.get_height()
-            eloignement_facteur = 1.5
-            zoom_facteur = 0.7
-        elif self.jeu.nombre_joueurs==4:
-            excentricite = 1.2*self.screen.get_width()/self.screen.get_height()
-            eloignement_facteur = 1.3
+            eloignement_facteur = 1.75
             zoom_facteur = 0.8
+            fac_player *= 1.
+        elif self.jeu.nombre_joueurs==4:
+            excentricite = 1.05*self.screen.get_width()/self.screen.get_height()
+            eloignement_facteur = 1.7
+            zoom_facteur = 0.8
+            fac_player *= 1.2
         elif self.jeu.nombre_joueurs==5:
             excentricite = 1.4*self.screen.get_width()/self.screen.get_height()
-            eloignement_facteur = 1.7
-            zoom_facteur = 0.55
-            angles_pos = [0, 50, 144, 216, 310]
+            eloignement_facteur = 1.65
+            zoom_facteur = 0.65
+            angles_pos = [0, 50, 160, 200, 310]
+            fac_player *= 1.2
         elif self.jeu.nombre_joueurs==6:
             excentricite = 2*self.screen.get_width()/self.screen.get_height()
             eloignement_facteur = 1.5
-            zoom_facteur = 0.55
+            zoom_facteur = 0.6
             angles_pos = [0, 35, 145, 180, 215, 325]
+            fac_player *= 1.2
         elif self.jeu.nombre_joueurs==7:
             excentricite = 1.5*self.screen.get_width()/self.screen.get_height()
-            eloignement_facteur = 1.4
-            zoom_facteur = 0.45
+            eloignement_facteur = 1.6
+            zoom_facteur = 0.6
             x = 360/7
-            angles_pos = [0, 0.9*1*x, 2.4*x, 3.2*x, 3.9*x, 4.75*x, 6.1*x]
+            angles_pos = [0, 0.85*1*x, 2.58*x, 3.27*x, 3.83*x, 4.57*x, 6.15*x]
+            fac_player *= 1.2
 
         if angles_pos is not None:
             angles_pos = np.array(angles_pos)*np.pi/180
 
-        return excentricite, eloignement_facteur, zoom_facteur, angles_pos
+        return excentricite, eloignement_facteur, zoom_facteur, angles_pos, fac_player
 
     def render(self):
         self.init_background()
         nb_joueurs = self.jeu.nombre_joueurs
         angle_sub = (360/nb_joueurs)*np.pi/180
 
-        excentricite, eloignement_facteur, zoom_facteur, angles_pos = self.distances_plateaux()
+        excentricite, eloignement_facteur, zoom_facteur, angles_pos, fac_player = self.distances_plateaux()
 
         centre_screen = np.array([self.screen.get_width()/2, self.screen.get_height()/2])
         R = ((self.screen.get_width()/2)*eloignement_facteur)
-        dim_board = np.array([cst.largeur_board, cst.hauteur_board])
+        dim_board_base = np.array([cst.largeur_board, cst.hauteur_board])
         unzoom = zoom_facteur*self.screen.get_height()/(cst.hauteur_board*4/3)
 
         coords_carte = np.array([[-cst.largeur_carte/2,-cst.hauteur_carte/2],  # topleft
@@ -107,13 +112,16 @@ class Renderer():
         cartes_vues = []
 
         for num_joueur, joueur in enumerate(self.jeu.joueurs):
+            dim_board = dim_board_base
+            if num_joueur==0:
+                dim_board[1] += (cst.hauteur_carte+cst.espace_entre_cartes)
             if angles_pos is not None:
                 angle_pos_plateau = angles_pos[num_joueur]
             else:
                 angle_pos_plateau = angle_sub*num_joueur
 
             if num_joueur==0:
-                unzoom = np.max([0.00025*self.screen.get_height(), zoom_facteur*self.screen.get_height()/(cst.hauteur_board*4/3)])
+                unzoom = np.max([fac_player*self.screen.get_height(), zoom_facteur*self.screen.get_height()/(cst.hauteur_board*4/3)])
             else:
                 unzoom = zoom_facteur*self.screen.get_height()/(cst.hauteur_board*4/3)
 
@@ -218,9 +226,9 @@ class Renderer():
 
                     self.screen.blit(etage.surface_screen, etage.pos)
 
-        # for angle in range(0, 360, 1):
-        #     rot = self.rotation_matrix(angle, a=excentricite)
-        #     pg.draw.circle(self.screen, (0,0,0), centre_screen+rot.dot(np.array([0,-R*unzoom])), 3)
+        for angle in range(0, 360, 1):
+            rot = self.rotation_matrix(angle, a=excentricite)
+            pg.draw.circle(self.screen, (0,0,0), centre_screen+rot.dot(np.array([0,-R*unzoom])), 3)
 
         for carte in self.jeu.cartes:
             if carte not in cartes_vues and carte.surface_screen is not None:

@@ -557,24 +557,24 @@ class Jeu:
 
 
 
-jeu = Jeu(3, cartes.paquet_cartes, cartes.merveilles, auto=False, GUI=True)
+jeu = Jeu(7, cartes.paquet_cartes, cartes.merveilles, auto=False, GUI=True)
 arr_scores = []
 
-Profiler = pprofile.Profile()
-with Profiler:
-    for i in range(10):
-        print("Jeu", i)
-        jeu.run_game()
+# Profiler = pprofile.Profile()
+# with Profiler:
+for i in range(10):
+    print("Jeu", i)
+    jeu.run_game()
 
-        scores = jeu.scores
-        for s in scores:
-            arr_scores.append(s)
+    scores = jeu.scores
+    for s in scores:
+        arr_scores.append(s)
 
-        jeu.reset()
-
+    jeu.reset()
 pg.quit()
-Profiler.dump_stats("Benchmark.txt")
-pause()
+
+# Profiler.dump_stats("Benchmark.txt")
+# pause()
 
 plt.hist(arr_scores, bins=20)
 plt.show()
