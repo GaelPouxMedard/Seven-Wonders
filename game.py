@@ -450,6 +450,7 @@ class Joueur:
             self.tresor -= cout
             self.cite.batiments.append(cible)
             self.cite.batiments_noms.append(cible.nom)
+            cible.construite = True
 
             # Effet
             effet = cible.effet
@@ -519,9 +520,12 @@ class Carte:
         self.couleur = None
         self.age = None
         self.nb_joueurs = None
+        self.construite = False
 
         self.effet = None
 
+        self.rendered_cite = False
+        self.rendered_main = False
         self.surface = None
         self.surface_screen = None
         self.surface_screen_zoomed = None
@@ -724,8 +728,6 @@ class Merveille:
             pg.draw.rect(self.surface, color, pg.Rect(0, 0, cst.largeur_merveille, cst.hauteur_carte), border_radius=cst.border_radius)
             pg.draw.rect(self.surface, pg.Color("black"), pg.Rect(0, 0, cst.largeur_merveille, cst.hauteur_carte), int(3*cst.scale_cartes/30), border_radius=cst.border_radius)
 
-
-
         self.prop_hauteur_rect_or = 0.4
         self.nb_infos = 3
         img_argent = pg.transform.smoothscale(cst.images["argent"], np.array(cst.images["argent"].get_size())*8*self.prop_hauteur_rect_or)
@@ -746,17 +748,21 @@ class Merveille:
         self.surface.blit(img_argent, pos_argent)
         self.surface.blit(img_militaire, pos_militaire)
         self.surface.blit(img_points, pos_points)
-        self.surface_avec_infos = self.surface.copy()
+        self.surface_avec_infos = None
 
     def draw_infos(self, joueur):
-        self.surface_avec_infos.blit(self.surface, (0,0))
+        if self.surface_screen is not None:
+            self.surface_avec_infos = pg.Surface(self.surface_screen.get_size(), pg.SRCALPHA, 32)
+        elif self.surface_screen is None:
+            self.surface_avec_infos = pg.Surface(self.surface.get_size(), pg.SRCALPHA, 32)
 
+        self.surface_avec_infos.fill((0,0,0,0))
         cote_carre = cst.hauteur_merveille*self.prop_hauteur_rect_or
 
         joueur.decompte_points()
-        nb_or_text = pg.font.SysFont("Comic sans", int(2*cst.scale_cartes)).render(f"{joueur.tresor}", True, (0,0,0))
-        nb_militaire_text = pg.font.SysFont("Comic sans", int(2*cst.scale_cartes)).render(f"{joueur.cite.puissance_militaire}", True, (0,0,0))
-        nb_points_text = pg.font.SysFont("Comic sans", int(2*cst.scale_cartes)).render(f"{joueur.points_total}", True, (0,0,0))
+        nb_or_text = cst.font_infos.render(f"{joueur.tresor}", True, (0,0,0))
+        nb_militaire_text = cst.font_infos.render(f"{joueur.cite.puissance_militaire}", True, (0,0,0))
+        nb_points_text = cst.font_infos.render(f"{joueur.points_total}", True, (0,0,0))
 
 
         centre_piece = np.array((cst.largeur_merveille-cote_carre*(1/2), cote_carre/2))

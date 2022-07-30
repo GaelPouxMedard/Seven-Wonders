@@ -9,12 +9,13 @@ pg.font.init()
 import sys
 import time
 from GUI import Renderer
+from copy import deepcopy as copy
 
 class Jeu:
-    def __init__(self, nombre_joueurs, cartes, merveilles, auto=True, init_window=True, GUI=True):
+    def __init__(self, nombre_joueurs, cartes, merveilles, auto=True, GUI=True):
         # Jeu
-        self.cartes = cartes
-        self.merveilles = merveilles
+        self.cartes = copy(cartes)
+        self.merveilles = copy(merveilles)
         self.joueurs = []
         self.defausse = list()
         self.nombre_joueurs = nombre_joueurs
@@ -24,7 +25,7 @@ class Jeu:
         self.tour = 1
         self.age = 1
         self.game_ended = False
-        self.dernier_tour = len([carte for carte in self.cartes if carte.age == 1 and carte.nb_joueurs <= self.nombre_joueurs])//self.nombre_joueurs - 1
+        self.dernier_tour = len([carte for carte in cartes if carte.age == 1 and carte.nb_joueurs <= self.nombre_joueurs])//self.nombre_joueurs - 1
         self.cartes_initialisees = False
 
         self.auto = auto
@@ -32,7 +33,7 @@ class Jeu:
 
         # GUI
         self.GUI = GUI
-        if self.GUI and init_window:
+        if self.GUI:
             self.renderer = Renderer(self)
 
     def init_partie(self):
@@ -311,6 +312,16 @@ class Jeu:
         self.age = 1
         self.game_ended = False
 
+        for carte in self.cartes:
+            carte.construite = False
+            carte.rendered_cite = False
+            carte.rendered_main = False
+        for merveille in self.merveilles:
+            merveille.surface_screen = None
+            for etage in merveille.etages:
+                etage.surface_screen = None
+
+
         idx_merveille = np.random.choice(list(range(7)), self.nombre_joueurs, replace=False)*2
         idx_jour_nuit = np.random.choice([0,1], self.nombre_joueurs, replace=True)
         idx_merveille += idx_jour_nuit
@@ -454,6 +465,7 @@ class Jeu:
         pg.display.flip()
 
     def run_game(self):
+        self.reset()
         running = True
         self.game_ended = False
         last = 0
@@ -557,12 +569,13 @@ class Jeu:
 
 
 
-jeu = Jeu(7, cartes.paquet_cartes, cartes.merveilles, auto=False, GUI=True)
+
+jeu = Jeu(7, cartes.paquet_cartes, cartes.merveilles, auto=True, GUI=True)
 arr_scores = []
 
 # Profiler = pprofile.Profile()
 # with Profiler:
-for i in range(10):
+for i in range(100):
     print("Jeu", i)
     jeu.run_game()
 

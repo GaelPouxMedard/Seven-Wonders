@@ -157,10 +157,11 @@ class Renderer():
                     carte_pos_plateau_rot = rot.dot(carte.pos_plateau)
                     carte.unzoom = unzoom
 
-                    carte.surface_screen = pg.transform.smoothscale(carte.surface, np.array(carte.surface.get_size())*unzoom)
-
-                    carte.surface_screen_zoomed, _ = rot_center(carte.surface, angle_rot_plateau*180/np.pi, pos_centre_carte)
-                    carte.surface_screen, rot_rect = rot_center(carte.surface_screen, angle_rot_plateau*180/np.pi, pos_centre_carte)
+                    if (not carte.construite and not carte.rendered_main):
+                        carte.surface_screen = pg.transform.smoothscale(carte.surface, np.array(carte.surface.get_size())*unzoom)
+                        carte.surface_screen_zoomed, _ = rot_center(carte.surface, angle_rot_plateau*180/np.pi, pos_centre_carte)
+                        carte.surface_screen, rot_rect = rot_center(carte.surface_screen, angle_rot_plateau*180/np.pi, pos_centre_carte)
+                        carte.rendered_main = True
 
                     carte.pos = centre_screen+(pos_plateau_rot+carte_pos_plateau_rot)*unzoom + shift_topleft_carte
                     cartes_vues.append(carte)
@@ -179,9 +180,11 @@ class Renderer():
 
 
                 carte.unzoom = unzoom
-                carte.surface_screen = pg.transform.smoothscale(carte.surface, np.array(carte.surface.get_size())*unzoom)
-                carte.surface_screen_zoomed, _ = rot_center(carte.surface, angle_rot_plateau*180/np.pi, pos_centre_carte)
-                carte.surface_screen, rot_rect = rot_center(carte.surface_screen, angle_rot_plateau*180/np.pi, pos_centre_carte)
+                if (carte.construite and not carte.rendered_cite):
+                    carte.surface_screen = pg.transform.smoothscale(carte.surface, np.array(carte.surface.get_size())*unzoom)
+                    carte.surface_screen_zoomed, _ = rot_center(carte.surface, angle_rot_plateau*180/np.pi, pos_centre_carte)
+                    carte.surface_screen, rot_rect = rot_center(carte.surface_screen, angle_rot_plateau*180/np.pi, pos_centre_carte)
+                    carte.rendered_cite = True
 
                 carte.pos = centre_screen+(pos_plateau_rot+carte_pos_plateau_rot)*unzoom + shift_topleft_carte
                 cartes_vues.append(carte)
@@ -200,13 +203,17 @@ class Renderer():
 
                 joueur.merveille.draw_infos(joueur)
 
-                joueur.merveille.surface_screen = pg.transform.smoothscale(joueur.merveille.surface_avec_infos, np.array(joueur.merveille.surface_avec_infos.get_size())*unzoom)
-                joueur.merveille.surface_screen, rot_rect = rot_center(joueur.merveille.surface_screen, angle_rot_plateau*180/np.pi, pos_centre_merveille)
+                joueur.merveille.surface_screen_infos = pg.transform.smoothscale(joueur.merveille.surface_avec_infos, np.array(joueur.merveille.surface_avec_infos.get_size())*unzoom)
+                joueur.merveille.surface_screen_infos, rot_rect = rot_center(joueur.merveille.surface_screen_infos, angle_rot_plateau*180/np.pi, pos_centre_merveille)
+
+                if (joueur.merveille.surface_screen is None):
+                    joueur.merveille.surface_screen = pg.transform.smoothscale(joueur.merveille.surface, np.array(joueur.merveille.surface.get_size())*unzoom)
+                    joueur.merveille.surface_screen, rot_rect = rot_center(joueur.merveille.surface_screen, angle_rot_plateau*180/np.pi, pos_centre_merveille)
 
                 joueur.merveille.pos = centre_screen+(pos_plateau_rot+merveille_pos_plateau_rot)*unzoom + shift_topleft_merveille
 
-
                 self.screen.blit(joueur.merveille.surface_screen, joueur.merveille.pos)
+                self.screen.blit(joueur.merveille.surface_screen_infos, joueur.merveille.pos)
 
                 nombre_etages = len(joueur.merveille.etages)
                 for num_etage, etage in enumerate(joueur.merveille.etages):
@@ -218,17 +225,18 @@ class Renderer():
                     etage_pos_plateau_rot = rot.dot(etage.pos_plateau)
 
                     etage.unzoom = unzoom
-                    etage.surface_screen = pg.transform.smoothscale(etage.surface, np.array(etage.surface.get_size())*unzoom)
-                    etage.surface_screen_zoomed, _ = rot_center(etage.surface, angle_rot_plateau*180/np.pi, pos_centre_etage)
-                    etage.surface_screen, rot_rect = rot_center(etage.surface_screen, angle_rot_plateau*180/np.pi, pos_centre_etage)
+                    if (etage.surface_screen is None):
+                        etage.surface_screen = pg.transform.smoothscale(etage.surface, np.array(etage.surface.get_size())*unzoom)
+                        etage.surface_screen_zoomed, _ = rot_center(etage.surface, angle_rot_plateau*180/np.pi, pos_centre_etage)
+                        etage.surface_screen, rot_rect = rot_center(etage.surface_screen, angle_rot_plateau*180/np.pi, pos_centre_etage)
 
                     etage.pos = centre_screen+(pos_plateau_rot+etage_pos_plateau_rot)*unzoom + shift_topleft_etage
 
                     self.screen.blit(etage.surface_screen, etage.pos)
 
-        for angle in range(0, 360, 1):
-            rot = self.rotation_matrix(angle, a=excentricite)
-            pg.draw.circle(self.screen, (0,0,0), centre_screen+rot.dot(np.array([0,-R*unzoom])), 3)
+        # for angle in range(0, 360, 1):
+        #     rot = self.rotation_matrix(angle, a=excentricite)
+        #     pg.draw.circle(self.screen, (0,0,0), centre_screen+rot.dot(np.array([0,-R*unzoom])), 3)
 
         for carte in self.jeu.cartes:
             if carte not in cartes_vues and carte.surface_screen is not None:
