@@ -347,6 +347,7 @@ class Renderer():
         self.draw_results_sheet()
         surface_fond = self.surface_results_vierge
 
+        alpha = 220
         size_screen = self.screen.get_size()
         props = np.array([cst.prop_largeur_colonne_resultats, cst.prop_hauteur_colonne_resultats])
         marges = (size_screen-props*size_screen)/2
@@ -368,6 +369,15 @@ class Renderer():
                 pos = (marges[0]+int((i+2+0.5)*largeur_colonne - dims_texte[0]/2), marges[1]+int((j+0.5)*hauteur_ligne - dims_texte[1]/2))
                 surface_fond.blit(texte, pos)
 
+
+        pos = np.array([0, 0])
+        pos[0] = size_screen[0]/2
+        pos[1] = size_screen[1]*0.98-100
+        size = np.array([1000, 50])
+        pg.draw.rect(surface_fond, (255,255,255,alpha), pg.Rect(*(pos-size/2), *size), border_radius=cst.border_radius)
+        pg.draw.rect(surface_fond, (0,0,0,255), pg.Rect(*(pos-size/2), *size), width=3, border_radius=cst.border_radius)
+        txt = cst.font_scores.render(f"Pressez \"Entrée\" pour continuer", True, (0,0,0))
+        surface_fond.blit(txt, pos-np.array(txt.get_size())/2)
 
         self.screen.blit(surface_fond, (0,0))
         pg.display.flip()

@@ -104,7 +104,7 @@ pos_act = {}
 prop_largeur_choix_defausse = 0.95
 prop_hauteur_choix_defausse = 0.95
 prop_largeur_colonne_resultats = 0.95
-prop_hauteur_colonne_resultats = 0.95
+prop_hauteur_colonne_resultats = 0.6
 
 import numpy as np
 pos_act[act_construire_batiment] = np.array((0.4*largeur_carte, 0.5*hauteur_carte))

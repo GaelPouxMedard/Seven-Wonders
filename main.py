@@ -292,7 +292,6 @@ class Jeu:
                     self.defausse.append(carte)
                     joueur.main.remove(carte)
             self.conflits_militaires()
-            self.renderer.end_game(self)  # TODO REMOVE
 
             self.age += 1
             self.tour = 1
