@@ -201,10 +201,8 @@ class Renderer():
                 joueur.merveille.pos_plateau = np.array([debut_merveille, cst.hauteur_carte+cst.espace_entre_cartes_vertical])
                 merveille_pos_plateau_rot = rot.dot(joueur.merveille.pos_plateau)
 
-                joueur.merveille.draw_infos(joueur)
-
-                joueur.merveille.surface_screen_infos = pg.transform.smoothscale(joueur.merveille.surface_avec_infos, np.array(joueur.merveille.surface_avec_infos.get_size())*unzoom)
-                joueur.merveille.surface_screen_infos, rot_rect = rot_center(joueur.merveille.surface_screen_infos, angle_rot_plateau*180/np.pi, pos_centre_merveille)
+                joueur.merveille.draw_infos(joueur, unzoom)
+                joueur.merveille.surface_screen_infos, rot_rect = rot_center(joueur.merveille.surface_avec_infos, angle_rot_plateau*180/np.pi, pos_centre_merveille)
 
                 if (joueur.merveille.surface_screen is None):
                     joueur.merveille.surface_screen = pg.transform.smoothscale(joueur.merveille.surface, np.array(joueur.merveille.surface.get_size())*unzoom)
@@ -275,9 +273,114 @@ class Renderer():
                 etage.is_clicked = False
                 etage.hovered = False
 
-    def end_game(self):
-        pass
-        #pg.quit()
+    def draw_results_sheet(self):
+        alpha = 220
+        width = 1
+        size_screen = self.screen.get_size()
+        props = np.array([cst.prop_largeur_colonne_resultats, cst.prop_hauteur_colonne_resultats])
+        marges = (size_screen-props*size_screen)/2
+        largeur_colonne = (size_screen[0]-marges[0]*2)/9
+        hauteur_ligne = (size_screen[1]-marges[1]*2)/9
+        surface_fond = pg.Surface(size_screen, pg.SRCALPHA, 32)
+        pg.draw.rect(surface_fond, (255,255,255,alpha), pg.Rect(*marges, *size_screen*props), border_radius=cst.border_radius)
+        pg.draw.rect(surface_fond, (0,0,0,alpha), pg.Rect(*marges, *size_screen*props), width, border_radius=cst.border_radius)
+
+        for i in range(1, 9):
+            if i == 2:
+                img = cst.images[cst.merveille]
+                pos = np.array((largeur_colonne*2/2, marges[1] + (i-1)*hauteur_ligne)+hauteur_ligne/2)
+                pos -= np.array(img.get_size())/2
+                surface_fond.blit(img, pos)
+            elif i == 3:
+                img = cst.images[cst.argent_score]
+                pos = np.array((largeur_colonne*2/2, marges[1] + (i-1)*hauteur_ligne)+hauteur_ligne/2)
+                pos -= np.array(img.get_size())/2
+                surface_fond.blit(img, pos)
+            elif i == 4:
+                img = cst.images[cst.militaire]
+                pos = np.array((largeur_colonne*2/2, marges[1] + (i-1)*hauteur_ligne)+hauteur_ligne/2)
+                pos -= np.array(img.get_size())/2
+                surface_fond.blit(img, pos)
+            elif i == 5:
+                pg.draw.rect(surface_fond, (85,157,206,alpha), (marges[0], marges[1] + (i-1)*hauteur_ligne, 2*largeur_colonne, hauteur_ligne))
+                img = cst.images[cst.trait_score]
+                pos = np.array((largeur_colonne*2/2, marges[1] + (i-1)*hauteur_ligne)+hauteur_ligne/2)
+                pos -= np.array(img.get_size())/2
+                surface_fond.blit(img, pos)
+            elif i == 6:
+                pg.draw.rect(surface_fond, (242,173,80,alpha), (marges[0], marges[1] + (i-1)*hauteur_ligne, 2*largeur_colonne, hauteur_ligne))
+                img = cst.images[cst.rond_score]
+                pos = np.array((largeur_colonne*2/2, marges[1] + (i-1)*hauteur_ligne)+hauteur_ligne/2)
+                pos -= np.array(img.get_size())/2
+                surface_fond.blit(img, pos)
+            elif i == 7:
+                pg.draw.rect(surface_fond, (100,160,100,alpha), (marges[0], marges[1] + (i-1)*hauteur_ligne, 2*largeur_colonne, hauteur_ligne))
+                img = cst.images[cst.triangle_score]
+                pos = np.array((largeur_colonne*2/2, marges[1] + (i-1)*hauteur_ligne)+hauteur_ligne/2)
+                pos -= np.array(img.get_size())/2
+                surface_fond.blit(img, pos)
+            elif i == 8:
+                pg.draw.rect(surface_fond, (112,102,165,alpha), (marges[0], marges[1] + (i-1)*hauteur_ligne, 2*largeur_colonne, hauteur_ligne))
+                img = cst.images[cst.etoile_score]
+                pos = np.array((largeur_colonne*2/2, marges[1] + (i-1)*hauteur_ligne)+hauteur_ligne/2)
+                pos -= np.array(img.get_size())/2
+                surface_fond.blit(img, pos)
+
+        for i in range(2, 9):
+            w = width
+            if i==2:
+                w = 3*width
+            pg.draw.line(surface_fond, (0,0,0,alpha), (marges[0]+i*largeur_colonne, marges[1]), (marges[0]+i*largeur_colonne, marges[1]+int((props[1])*size_screen[1])), width=w)
+        for i in range(1, 9):
+            w = width
+            if i==1 or i==8:
+                w = 3*width
+            pg.draw.line(surface_fond, (0,0,0,alpha), (marges[0], marges[1] + i*hauteur_ligne), (marges[0]+int((props[0])*size_screen[0]), marges[1] + i*hauteur_ligne), width=w)
+
+
+        self.surface_results_vierge = surface_fond
+
+    def end_game(self, jeu):
+
+        self.draw_results_sheet()
+        surface_fond = self.surface_results_vierge
+
+        size_screen = self.screen.get_size()
+        props = np.array([cst.prop_largeur_colonne_resultats, cst.prop_hauteur_colonne_resultats])
+        marges = (size_screen-props*size_screen)/2
+        largeur_colonne = (size_screen[0]-marges[0]*2)/9
+        hauteur_ligne = (size_screen[1]-marges[1]*2)/9
+
+        for i, joueur in enumerate(jeu.joueurs):
+            for j, ligne in enumerate([cst.nom, cst.merveille, cst.argent, cst.militaire, cst.bleu, cst.jaune, cst.vert, cst.violet, cst.somme]):
+                if ligne == cst.nom:
+                    id_joueur = "Joueur "+str(joueur.id+1)
+                    if joueur.id == 0:
+                        id_joueur = "Vous"
+                    texte = cst.font_scores.render(f"{id_joueur}", True, (0,0,0))
+                elif ligne == cst.somme:
+                    texte = cst.font_scores.render(f"{joueur.points_total}", True, (0,0,0))
+                else:
+                    texte = cst.font_scores.render(f"{joueur.points[ligne]}", True, (0,0,0))
+                dims_texte = texte.get_size()
+                pos = (marges[0]+int((i+2+0.5)*largeur_colonne - dims_texte[0]/2), marges[1]+int((j+0.5)*hauteur_ligne - dims_texte[1]/2))
+                surface_fond.blit(texte, pos)
+
+
+        self.screen.blit(surface_fond, (0,0))
+        pg.display.flip()
+
+        while True:
+            event = pg.event.wait()
+            if event.type == pg.QUIT:
+                pg.quit()
+                sys.exit()
+            if event.type == pg.KEYDOWN:
+                if event.key == pg.K_RETURN:
+                    break
+
+
+            pg.display.flip()
 
 
 

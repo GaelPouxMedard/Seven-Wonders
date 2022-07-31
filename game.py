@@ -750,14 +750,12 @@ class Merveille:
         self.surface.blit(img_points, pos_points)
         self.surface_avec_infos = None
 
-    def draw_infos(self, joueur):
-        if self.surface_screen is not None:
-            self.surface_avec_infos = pg.Surface(self.surface_screen.get_size(), pg.SRCALPHA, 32)
-        elif self.surface_screen is None:
-            self.surface_avec_infos = pg.Surface(self.surface.get_size(), pg.SRCALPHA, 32)
+    def draw_infos(self, joueur, unzoom):
+        largeur_merveille, hauteur_merveille = cst.largeur_merveille*unzoom, cst.hauteur_merveille*unzoom
 
+        self.surface_avec_infos = pg.Surface((largeur_merveille, hauteur_merveille), pg.SRCALPHA, 32)
         self.surface_avec_infos.fill((0,0,0,0))
-        cote_carre = cst.hauteur_merveille*self.prop_hauteur_rect_or
+        cote_carre = hauteur_merveille*self.prop_hauteur_rect_or
 
         joueur.decompte_points()
         nb_or_text = cst.font_infos.render(f"{joueur.tresor}", True, (0,0,0))
@@ -765,9 +763,9 @@ class Merveille:
         nb_points_text = cst.font_infos.render(f"{joueur.points_total}", True, (0,0,0))
 
 
-        centre_piece = np.array((cst.largeur_merveille-cote_carre*(1/2), cote_carre/2))
-        centre_militaire = np.array((cst.largeur_merveille-cote_carre*(1+1/2), cote_carre/2))
-        centre_points = np.array((cst.largeur_merveille-cote_carre*(2+1/2), cote_carre/2))
+        centre_piece = np.array((largeur_merveille-cote_carre*(1/2), cote_carre/2))
+        centre_militaire = np.array((largeur_merveille-cote_carre*(1+1/2), cote_carre/2))
+        centre_points = np.array((largeur_merveille-cote_carre*(2+1/2), cote_carre/2))
         pos_txt_or = centre_piece-np.array(nb_or_text.get_size())/2
         pos_txt_militaire = centre_militaire-np.array(nb_militaire_text.get_size())/2
         pos_txt_points = centre_points-np.array(nb_points_text.get_size())/2
@@ -775,8 +773,6 @@ class Merveille:
         self.surface_avec_infos.blit(nb_or_text, pos_txt_or)
         self.surface_avec_infos.blit(nb_militaire_text, pos_txt_militaire)
         self.surface_avec_infos.blit(nb_points_text, pos_txt_points)
-
-        return self.surface_avec_infos
 
 class Etage:
     def __init__(self, nom_merveille=None, numero=None):

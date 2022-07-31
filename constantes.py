@@ -25,6 +25,13 @@ couleurs = [marron, gris, jaune, vert, rouge, bleu, violet]
 merveille = "merveille"
 militaire = "militaire"
 points = "points"
+somme = "somme"
+nom = "nom"
+argent_score = "argent-score"
+trait_score = "trait-score"
+rond_score = "rond-score"
+triangle_score = "triangle-score"
+etoile_score = "etoile-score"
 
 symbole_etoile = "etoile"
 symbole_masque = "masque"
@@ -96,6 +103,8 @@ pos_act = {}
 
 prop_largeur_choix_defausse = 0.95
 prop_hauteur_choix_defausse = 0.95
+prop_largeur_colonne_resultats = 0.95
+prop_hauteur_colonne_resultats = 0.95
 
 import numpy as np
 pos_act[act_construire_batiment] = np.array((0.4*largeur_carte, 0.5*hauteur_carte))
@@ -105,7 +114,8 @@ pos_act[act_vendre] = np.array((0.4*largeur_carte, 0.9*hauteur_carte))
 import pygame as pg
 pg.font.init()
 font = pg.font.SysFont("Arial", int(1*scale_cartes))
-font_infos = pg.font.SysFont("Comic sans", int(2*scale_cartes))
+font_infos = pg.font.SysFont("Comic sans", int(0.4*scale_cartes))
+font_scores = pg.font.SysFont("Comic sans", int(0.6*scale_cartes))
 
 images = {
     fer: pg.image.load("Images/Elements_cartes/Ressources/Fer.png"),
@@ -118,6 +128,12 @@ images = {
     argent: pg.image.load("Images/Elements_cartes/Effets/Argent.png"),
     militaire: pg.image.load("Images/Elements_cartes/Effets/Militaire.png"),
     points: pg.image.load("Images/Elements_cartes/Effets/Points victoire.png"),
+    merveille: pg.image.load("Images/Elements_cartes/Effets/Merveille_score.png"),
+    argent_score: pg.image.load("Images/Elements_cartes/Effets/Piece_scores.png"),
+    trait_score: pg.image.load("Images/Elements_cartes/Effets/Trait_scores.png"),
+    rond_score: pg.image.load("Images/Elements_cartes/Effets/Rond_scores.png"),
+    triangle_score: pg.image.load("Images/Elements_cartes/Effets/Triangle_score.png"),
+    etoile_score: pg.image.load("Images/Elements_cartes/Effets/Etoile_scores.png"),
 }
 
 scale_res = 0.1

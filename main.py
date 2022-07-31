@@ -287,6 +287,7 @@ class Jeu:
 
         # Fin âge
         if len(self.joueurs[0].main)<=1:
+            self.renderer.end_game(self)  # TODO REMOVE
             for joueur in self.joueurs:
                 for carte in joueur.main:
                     self.defausse.append(carte)
@@ -301,7 +302,7 @@ class Jeu:
             self.comptage_points()
             self.game_ended = True
             if self.GUI:
-                self.renderer.end_game()
+                self.renderer.end_game(self)
 
     def reset(self):
         self.joueurs = []
@@ -570,7 +571,7 @@ class Jeu:
 
 
 
-jeu = Jeu(7, cartes.paquet_cartes, cartes.merveilles, auto=True, GUI=True)
+jeu = Jeu(7, cartes.paquet_cartes, cartes.merveilles, auto=False, GUI=True)
 arr_scores = []
 
 # Profiler = pprofile.Profile()
