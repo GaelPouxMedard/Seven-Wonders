@@ -1,7 +1,6 @@
 from game import Carte, Effet, Merveille, Etage
 import constantes as cst
 
-
 # ====================== MERVEILLES =======================
 #region Merveilles
 merveilles = []
@@ -135,7 +134,7 @@ etage_2.effet = effet_2
 merveille.etages.append(etage_2)
 etage_3 = Etage(merveille.nom, 3)
 etage_3.cout_ressource[cst.fer] = 2
-etage_3.cout_ressource[cst.vert] = 1
+etage_3.cout_ressource[cst.verre] = 1
 effet_3 = Effet()
 effet_3.effet_points_victoire = 7
 etage_3.effet = effet_3

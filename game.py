@@ -462,6 +462,7 @@ class Joueur:
             self.tresor -= cout
             effet = self.merveille.etages[self.etage_merveille].effet
             self.merveille.etages[self.etage_merveille].done = True
+            self.merveille.etages[self.etage_merveille].rendered = False
             self.merveille.etages[self.etage_merveille].draw()
             self.etage_merveille += 1
 
@@ -520,9 +521,9 @@ class Carte:
         self.couleur = None
         self.age = None
         self.nb_joueurs = None
-        self.construite = False
-
         self.effet = None
+
+        self.construite = False
 
         self.rendered_cite = False
         self.rendered_main = False
@@ -780,7 +781,9 @@ class Etage:
         self.cout_ressource = {cst.bois: 0, cst.argile: 0, cst.pierre: 0, cst.fer: 0, cst.tissu: 0, cst.verre: 0, cst.parchemin: 0, cst.argent: 0}
         self.effet = None
         self.numero = numero
+
         self.done = False
+        self.rendered = False
 
         self.surface = None
         self.surface_screen = None

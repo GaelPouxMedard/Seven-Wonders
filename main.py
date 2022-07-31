@@ -287,12 +287,13 @@ class Jeu:
 
         # Fin âge
         if len(self.joueurs[0].main)<=1:
-            self.renderer.end_game(self)  # TODO REMOVE
             for joueur in self.joueurs:
                 for carte in joueur.main:
                     self.defausse.append(carte)
                     joueur.main.remove(carte)
             self.conflits_militaires()
+            self.renderer.end_game(self)  # TODO REMOVE
+
             self.age += 1
             self.tour = 1
             self.init_age()
@@ -320,6 +321,9 @@ class Jeu:
         for merveille in self.merveilles:
             merveille.surface_screen = None
             for etage in merveille.etages:
+                etage.done = False
+                etage.rendered = False
+                etage.draw()
                 etage.surface_screen = None
 
 

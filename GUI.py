@@ -223,10 +223,11 @@ class Renderer():
                     etage_pos_plateau_rot = rot.dot(etage.pos_plateau)
 
                     etage.unzoom = unzoom
-                    if (etage.surface_screen is None):
+                    if (etage.surface_screen is None or not etage.rendered):
                         etage.surface_screen = pg.transform.smoothscale(etage.surface, np.array(etage.surface.get_size())*unzoom)
                         etage.surface_screen_zoomed, _ = rot_center(etage.surface, angle_rot_plateau*180/np.pi, pos_centre_etage)
                         etage.surface_screen, rot_rect = rot_center(etage.surface_screen, angle_rot_plateau*180/np.pi, pos_centre_etage)
+                        etage.rendered = True
 
                     etage.pos = centre_screen+(pos_plateau_rot+etage_pos_plateau_rot)*unzoom + shift_topleft_etage
 
@@ -341,7 +342,8 @@ class Renderer():
         self.surface_results_vierge = surface_fond
 
     def end_game(self, jeu):
-
+        self.render()
+        jeu.comptage_points()
         self.draw_results_sheet()
         surface_fond = self.surface_results_vierge
 
