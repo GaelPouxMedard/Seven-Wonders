@@ -8,7 +8,7 @@ class Renderer():
     def __init__(self, jeu):
         self.jeu = jeu
         pg.init()
-        self.screen = pg.display.set_mode((0,0), pg.RESIZABLE)
+        self.screen = pg.display.set_mode((0,0))#, pg.RESIZABLE)
         if sys.platform == "win32":
             HWND = pg.display.get_wm_info()['window']
             SW_MAXIMIZE = 3
@@ -20,6 +20,9 @@ class Renderer():
 
     def init_background(self):
         self.screen.blit(self.background, (0, 0))
+        bouton_quit = BoutonQuit(self.screen)
+        bouton_quit.draw()
+        self.screen.blit(bouton_quit.surface, bouton_quit.pos)
         #self.screen.fill((255,255,255))
 
     def rotation_matrix(self, angle, a=1, b=1):
@@ -46,30 +49,30 @@ class Renderer():
         excentricite, eloignement_facteur, zoom_facteur, angles_pos, fac_player = 0., 0., 0., None, 0.00025
         if self.jeu.nombre_joueurs==3:
             excentricite = 1.*self.screen.get_width()/self.screen.get_height()
-            eloignement_facteur = 1.75
+            eloignement_facteur = 2.
             zoom_facteur = 0.8
             fac_player *= 1.
         elif self.jeu.nombre_joueurs==4:
             excentricite = 1.05*self.screen.get_width()/self.screen.get_height()
-            eloignement_facteur = 1.7
+            eloignement_facteur = 1.8
             zoom_facteur = 0.8
-            fac_player *= 1.2
+            fac_player *= 1.1
         elif self.jeu.nombre_joueurs==5:
             excentricite = 1.4*self.screen.get_width()/self.screen.get_height()
-            eloignement_facteur = 1.65
+            eloignement_facteur = 1.85
             zoom_facteur = 0.65
             angles_pos = [0, 50, 160, 200, 310]
             fac_player *= 1.2
         elif self.jeu.nombre_joueurs==6:
             excentricite = 2*self.screen.get_width()/self.screen.get_height()
-            eloignement_facteur = 1.5
+            eloignement_facteur = 1.75
             zoom_facteur = 0.6
             angles_pos = [0, 35, 145, 180, 215, 325]
-            fac_player *= 1.2
+            fac_player *= 1.25
         elif self.jeu.nombre_joueurs==7:
             excentricite = 1.5*self.screen.get_width()/self.screen.get_height()
-            eloignement_facteur = 1.6
-            zoom_facteur = 0.6
+            eloignement_facteur = 1.75
+            zoom_facteur = 0.55
             x = 360/7
             angles_pos = [0, 0.85*1*x, 2.58*x, 3.27*x, 3.83*x, 4.57*x, 6.15*x]
             fac_player *= 1.2
@@ -416,6 +419,9 @@ class Renderer():
         bouton_continuer.masque = pg.mask.from_surface(bouton_continuer.surface)
         bouton_menu.rect = bouton_menu.surface.get_rect(topleft=bouton_menu.pos)
         bouton_menu.masque = pg.mask.from_surface(bouton_menu.surface)
+        bouton_quit = BoutonQuit(self.screen)
+        bouton_quit.draw()
+        surface_fond.blit(bouton_quit.surface, bouton_quit.pos)
 
         self.screen.blit(surface_fond, (0,0))
         pg.display.flip()
@@ -432,6 +438,10 @@ class Renderer():
             if event.type == pg.MOUSEBUTTONUP:
                 if event.button == 1:
                     click = True
+                    bouton_quit.check_hover()
+                    if bouton_quit.hovered:
+                        pg.quit()
+                        sys.exit()
 
             self.screen.blit(surface_fond, (0,0))
 
@@ -454,11 +464,22 @@ class Renderer():
         size_screen = self.screen.get_size()
         surface_fond = pg.Surface(size_screen, pg.SRCALPHA, 32)
         boutons = []
+        largeur_bouton = int(0.75*cst.largeur_carte)
+        hauteur_bouton = cst.hauteur_carte
+        espacement = 30
+        pos = np.array([0., 0.])
+        pos[1] = size_screen[1]*0.5
+
+        bouton_texte = Bouton(((largeur_bouton+espacement)*5+largeur_bouton, hauteur_bouton), f"Nombre de joueurs", size_txt_fac=0.2)
+        bouton_texte.draw()
+        bouton_texte.pos = (int(size_screen[0]/2+(-2.0)*(largeur_bouton+espacement)), size_screen[1]*0.3)
+        surface_fond.blit(bouton_texte.surface, bouton_texte.pos)
+        bouton_quit = BoutonQuit(self.screen)
+        bouton_quit.draw()
+        surface_fond.blit(bouton_quit.surface, bouton_quit.pos)
         for i, nombre in enumerate(range(3, 8)):
-            pos = np.array([0., 0.])
-            pos[0] = i*size_screen[0]/7
-            pos[1] = size_screen[1]*0.6-100
-            bouton = Bouton((cst.largeur_carte, cst.hauteur_carte), f"{nombre}", size_txt_fac=0.5)
+            pos[0] = size_screen[0]/2+(i-2.0)*(largeur_bouton+espacement)
+            bouton = Bouton((largeur_bouton, hauteur_bouton), f"{nombre}", size_txt_fac=1.)
             bouton.nombre = nombre
             bouton.clickable = True
             bouton.draw()
@@ -488,7 +509,13 @@ class Renderer():
                 if event.button == 1:
                     click = True
 
+                    bouton_quit.check_hover()
+                    if bouton_quit.hovered:
+                        pg.quit()
+                        sys.exit()
+
             self.screen.blit(surface_fond, (0,0))
+
 
             for bouton in boutons:
                 bouton.check_hover()
@@ -512,7 +539,7 @@ class Bouton():
         self.pos = None
         self.dims_carte = dims_carte
         self.action = None
-        size_txt = int(size_txt_fac*1.3*self.dims_carte[0]*cst.largeur_boutton_fac/7)
+        size_txt = int(size_txt_fac*1.*self.dims_carte[0]*cst.largeur_boutton_fac/7)
         self.font = pg.font.SysFont("Comic sans", size_txt)
 
         self.surface = pg.Surface((dims_carte[0]*cst.largeur_boutton_fac, dims_carte[1]*cst.hauteur_boutton_fac), pg.SRCALPHA, 32)
@@ -535,6 +562,40 @@ class Bouton():
         text_surface = font.render(self.texte, False, (0, 0, 0))
         pos = [(largeur_bouton-text_surface.get_width())/2, (hauteur_bouton-text_surface.get_height())/2]
         self.surface.blit(text_surface, pos)
+
+    def check_hover(self):
+        pos = pg.mouse.get_pos()
+        if self.rect is not None and self.masque is not None:
+            pos_in_mask = pos[0] - self.pos[0], pos[1] - self.pos[1]
+            if self.rect.collidepoint(*pos):
+                if self.masque.get_at(pos_in_mask):
+                    self.hovered = True
+                else:
+                    self.hovered = False
+            else:
+                self.hovered = False
+
+class BoutonQuit():
+    def __init__(self, screen):
+        self.is_clicked = False
+        self.hovered = False
+        self.pos = None
+        self.largeur_bouton = self.hauteur_bouton = 20
+
+        self.surface = pg.Surface((self.largeur_bouton, self.hauteur_bouton), pg.SRCALPHA, 32)
+        self.pos = (screen.get_size()[0]-self.largeur_bouton, 0)
+        self.surface_screen = None
+        self.masque = None
+        self.rect = None
+
+    def draw(self):
+        color = (255, 255, 255, 255)
+
+        pg.draw.rect(self.surface, color, pg.Rect(0, 0, self.largeur_bouton, self.hauteur_bouton), border_bottom_left_radius=2)
+        pg.draw.rect(self.surface, (0,0,0), pg.Rect(0, 0, self.largeur_bouton, self.hauteur_bouton), 1, border_bottom_left_radius=2)
+        self.surface.blit(cst.images[cst.croix], (self.largeur_bouton/2-cst.images[cst.croix].get_size()[0]/2, self.hauteur_bouton/2-cst.images[cst.croix].get_size()[1]/2))
+        self.rect = self.surface.get_rect(topleft=self.pos)
+        self.masque = pg.mask.from_surface(self.surface)
 
     def check_hover(self):
         pos = pg.mouse.get_pos()

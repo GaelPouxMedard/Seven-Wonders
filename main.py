@@ -12,7 +12,7 @@ from GUI import Renderer
 from copy import deepcopy as copy
 
 class Jeu:
-    def __init__(self, nombre_joueurs, cartes, merveilles, auto=True, GUI=True):
+    def __init__(self, cartes, merveilles, nombre_joueurs=3, auto=True, GUI=True):
         # Jeu
         self.cartes = copy(cartes)
         self.merveilles = copy(merveilles)
@@ -28,6 +28,8 @@ class Jeu:
         self.dernier_tour = 6  #len([carte for carte in cartes if carte.age == 1 and carte.nb_joueurs <= self.nombre_joueurs])//self.nombre_joueurs - 1
 
         self.auto = auto
+        if not GUI:
+            self.auto = True
         self.time_wait = 0.000001 #s
 
         # GUI
@@ -35,6 +37,8 @@ class Jeu:
         if self.GUI:
             self.renderer = Renderer(self)
             self.draw_all()
+            if not auto:
+                self.nombre_joueurs = self.renderer.menu()
 
     def init_partie(self):
         idx_merveille = np.random.choice(list(range(7)), self.nombre_joueurs, replace=False)*2
@@ -143,6 +147,8 @@ class Jeu:
                         surface_fond.blit(carte.surface_screen, carte.pos)
                         carte.rect = carte.surface_screen.get_rect(topleft=carte.pos)
                         carte.masque = pg.mask.from_surface(carte.surface_screen)
+                    bouton_quit = BoutonQuit(self.renderer.screen)
+                    bouton_quit.draw()
                     self.renderer.screen.blit(surface_fond, (0,0))
                     self.flip()
 
@@ -155,6 +161,10 @@ class Jeu:
                         if event.type == pg.MOUSEBUTTONUP:
                             if event.button == 1:
                                 click = True
+                                bouton_quit.check_hover()
+                                if bouton_quit.hovered:
+                                    pg.quit()
+                                    sys.exit()
 
                         changes = set()
                         changes = self.hover(changes, defausse=True)
@@ -196,9 +206,12 @@ class Jeu:
                     click = False
                     do_flip = False
                     play_round = False
+                    bouton_quit = BoutonQuit(self.renderer.screen)
+                    bouton_quit.draw()
                     self.renderer.render()
                     self.renderer.clean()
                     self.flip()
+
 
                     while True:
                         events = [pg.event.wait()]
@@ -213,6 +226,11 @@ class Jeu:
                             if event.type == pg.MOUSEBUTTONUP:
                                 if event.button == 1:
                                     click = True
+                                    bouton_quit.check_hover()
+                                    if bouton_quit.hovered:
+                                        pg.quit()
+                                        sys.exit()
+
                         if auto_temp: break
 
                         changes = set()
@@ -487,9 +505,11 @@ class Jeu:
         for joueur in self.joueurs:
             joueur.actions_possibles(self)
         if self.GUI:
+            bouton_quit = BoutonQuit(self.renderer.screen)
+            bouton_quit.draw()
             self.renderer.render()
 
-        while running:
+        while True:
             if self.GUI:
                 if not self.auto:
                     events = [pg.event.wait()]
@@ -503,9 +523,16 @@ class Jeu:
                         if event.key == pg.K_RIGHT:
                             self.auto = True
                             auto_temp = True
+                        if event.key == pg.K_ESCAPE:
+                            pg.quit()
+                            sys.exit()
                     if event.type == pg.MOUSEBUTTONUP:
                         if event.button == 1:
                             click = True
+                            bouton_quit.check_hover()
+                            if bouton_quit.hovered:
+                                pg.quit()
+                                sys.exit()
 
 
             if self.auto:
@@ -530,6 +557,8 @@ class Jeu:
                 if click:
                     change = self.click(changes)
                     click = False
+
+
 
                 if len(change) > 0:
                     self.renderer.render()
@@ -569,7 +598,7 @@ class Jeu:
                 do_flip = False
 
             if self.game_ended:
-                running = False
+                break
 
     def run(self, nombre_runs=10000000):
         for i in range(nombre_runs):
@@ -580,7 +609,7 @@ class Jeu:
 
 
 
-jeu = Jeu(7, cartes.paquet_cartes, cartes.merveilles, auto=False, GUI=True)
+jeu = Jeu(cartes.paquet_cartes, cartes.merveilles, nombre_joueurs=7, auto=False, GUI=True)
 arr_scores = []
 
 # Profiler = pprofile.Profile()
