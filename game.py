@@ -463,7 +463,8 @@ class Joueur:
             effet = self.merveille.etages[self.etage_merveille].effet
             self.merveille.etages[self.etage_merveille].done = True
             self.merveille.etages[self.etage_merveille].rendered = False
-            self.merveille.etages[self.etage_merveille].draw()
+            if jeu.GUI:
+                self.merveille.etages[self.etage_merveille].draw()
             self.etage_merveille += 1
 
             self.appliquer_effets(effet, jeu, cst.merveille)

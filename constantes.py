@@ -113,7 +113,7 @@ pos_act[act_vendre] = np.array((0.4*largeur_carte, 0.9*hauteur_carte))
 
 import pygame as pg
 pg.font.init()
-font = pg.font.SysFont("Arial", int(1*scale_cartes))
+font = pg.font.SysFont("Comic sans", int(1*scale_cartes))
 font_infos = pg.font.SysFont("Comic sans", int(0.4*scale_cartes))
 font_scores = pg.font.SysFont("Comic sans", int(0.6*scale_cartes))
 

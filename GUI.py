@@ -8,9 +8,6 @@ class Renderer():
     def __init__(self, jeu):
         self.jeu = jeu
         pg.init()
-        # self.screensize = np.array((ctypes.windll.user32.GetSystemMetrics(0), ctypes.windll.user32.GetSystemMetrics(1)))
-        # self.screen = pg.Surface(self.screensize*10, pg.SRCALPHA, 32)
-        # self.window = pg.display.set_mode((0,0), pg.RESIZABLE)
         self.screen = pg.display.set_mode((0,0), pg.RESIZABLE)
         if sys.platform == "win32":
             HWND = pg.display.get_wm_info()['window']
@@ -275,7 +272,7 @@ class Renderer():
                 etage.hovered = False
 
     def draw_results_sheet(self):
-        alpha = 220
+        alpha = 200
         width = 1
         size_screen = self.screen.get_size()
         props = np.array([cst.prop_largeur_colonne_resultats, cst.prop_hauteur_colonne_resultats])
@@ -289,41 +286,41 @@ class Renderer():
         for i in range(1, 9):
             if i == 2:
                 img = cst.images[cst.merveille]
-                pos = np.array((largeur_colonne*2/2, marges[1] + (i-1)*hauteur_ligne)+hauteur_ligne/2)
+                pos = np.array((marges[0]/2 + largeur_colonne*2/2, marges[1] + (i-1)*hauteur_ligne)+hauteur_ligne/2)
                 pos -= np.array(img.get_size())/2
                 surface_fond.blit(img, pos)
             elif i == 3:
                 img = cst.images[cst.argent_score]
-                pos = np.array((largeur_colonne*2/2, marges[1] + (i-1)*hauteur_ligne)+hauteur_ligne/2)
+                pos = np.array((marges[0]/2 + largeur_colonne*2/2, marges[1] + (i-1)*hauteur_ligne)+hauteur_ligne/2)
                 pos -= np.array(img.get_size())/2
                 surface_fond.blit(img, pos)
             elif i == 4:
                 img = cst.images[cst.militaire]
-                pos = np.array((largeur_colonne*2/2, marges[1] + (i-1)*hauteur_ligne)+hauteur_ligne/2)
+                pos = np.array((marges[0]/2 + largeur_colonne*2/2, marges[1] + (i-1)*hauteur_ligne)+hauteur_ligne/2)
                 pos -= np.array(img.get_size())/2
                 surface_fond.blit(img, pos)
             elif i == 5:
                 pg.draw.rect(surface_fond, (85,157,206,alpha), (marges[0], marges[1] + (i-1)*hauteur_ligne, 2*largeur_colonne, hauteur_ligne))
                 img = cst.images[cst.trait_score]
-                pos = np.array((largeur_colonne*2/2, marges[1] + (i-1)*hauteur_ligne)+hauteur_ligne/2)
+                pos = np.array((marges[0]/2 + largeur_colonne*2/2, marges[1] + (i-1)*hauteur_ligne)+hauteur_ligne/2)
                 pos -= np.array(img.get_size())/2
                 surface_fond.blit(img, pos)
             elif i == 6:
                 pg.draw.rect(surface_fond, (242,173,80,alpha), (marges[0], marges[1] + (i-1)*hauteur_ligne, 2*largeur_colonne, hauteur_ligne))
                 img = cst.images[cst.rond_score]
-                pos = np.array((largeur_colonne*2/2, marges[1] + (i-1)*hauteur_ligne)+hauteur_ligne/2)
+                pos = np.array((marges[0]/2 + largeur_colonne*2/2, marges[1] + (i-1)*hauteur_ligne)+hauteur_ligne/2)
                 pos -= np.array(img.get_size())/2
                 surface_fond.blit(img, pos)
             elif i == 7:
                 pg.draw.rect(surface_fond, (100,160,100,alpha), (marges[0], marges[1] + (i-1)*hauteur_ligne, 2*largeur_colonne, hauteur_ligne))
                 img = cst.images[cst.triangle_score]
-                pos = np.array((largeur_colonne*2/2, marges[1] + (i-1)*hauteur_ligne)+hauteur_ligne/2)
+                pos = np.array((marges[0]/2 + largeur_colonne*2/2, marges[1] + (i-1)*hauteur_ligne)+hauteur_ligne/2)
                 pos -= np.array(img.get_size())/2
                 surface_fond.blit(img, pos)
             elif i == 8:
                 pg.draw.rect(surface_fond, (112,102,165,alpha), (marges[0], marges[1] + (i-1)*hauteur_ligne, 2*largeur_colonne, hauteur_ligne))
                 img = cst.images[cst.etoile_score]
-                pos = np.array((largeur_colonne*2/2, marges[1] + (i-1)*hauteur_ligne)+hauteur_ligne/2)
+                pos = np.array((marges[0]/2 + largeur_colonne*2/2, marges[1] + (i-1)*hauteur_ligne)+hauteur_ligne/2)
                 pos -= np.array(img.get_size())/2
                 surface_fond.blit(img, pos)
 
@@ -347,15 +344,31 @@ class Renderer():
         self.draw_results_sheet()
         surface_fond = self.surface_results_vierge
 
-        alpha = 220
+        alpha = 200
+        width = 1
         size_screen = self.screen.get_size()
         props = np.array([cst.prop_largeur_colonne_resultats, cst.prop_hauteur_colonne_resultats])
         marges = (size_screen-props*size_screen)/2
         largeur_colonne = (size_screen[0]-marges[0]*2)/9
         hauteur_ligne = (size_screen[1]-marges[1]*2)/9
 
+        gagnants, pts_max = [], 0
+        for i, joueur in enumerate(jeu.joueurs):
+            if joueur.points_total>pts_max:
+                pts_max = joueur.points_total
+                gagnants = [i]
+            elif joueur.points_total==pts_max:
+                gagnants.append(i)
+
         for i, joueur in enumerate(jeu.joueurs):
             for j, ligne in enumerate([cst.nom, cst.merveille, cst.argent, cst.militaire, cst.bleu, cst.jaune, cst.vert, cst.violet, cst.somme]):
+                if i in gagnants and not (j in [0, 8] and i==6):
+                    pg.draw.rect(surface_fond, (255,213,70,alpha), (marges[0]+int((i+2)*largeur_colonne), marges[1] + (j)*hauteur_ligne, largeur_colonne, hauteur_ligne))
+                elif i in gagnants and (j==0 and i==6):
+                    pg.draw.rect(surface_fond, (255,213,70,alpha), (marges[0]+int((i+2)*largeur_colonne), marges[1] + (j)*hauteur_ligne, largeur_colonne, hauteur_ligne), border_top_right_radius=cst.border_radius)
+                elif i in gagnants and (j==8 and i==6):
+                    pg.draw.rect(surface_fond, (255,213,70,alpha), (marges[0]+int((i+2)*largeur_colonne), marges[1] + (j)*hauteur_ligne, largeur_colonne, hauteur_ligne), border_bottom_right_radius=cst.border_radius)
+
                 if ligne == cst.nom:
                     id_joueur = "Joueur "+str(joueur.id+1)
                     if joueur.id == 0:
@@ -370,18 +383,44 @@ class Renderer():
                 surface_fond.blit(texte, pos)
 
 
-        pos = np.array([0, 0])
-        pos[0] = size_screen[0]/2
+        for i in range(2, 9):
+            w = width
+            if i==2:
+                w = 3*width
+            pg.draw.line(surface_fond, (0,0,0,alpha), (marges[0]+i*largeur_colonne, marges[1]), (marges[0]+i*largeur_colonne, marges[1]+int((props[1])*size_screen[1])), width=w)
+        for i in range(0, 10):
+            w = width
+            if i==1 or i==8:
+                w = 3*width
+            pg.draw.line(surface_fond, (0,0,0,alpha), (marges[0], marges[1] + i*hauteur_ligne), (marges[0]+int((props[0])*size_screen[0]), marges[1] + i*hauteur_ligne), width=w)
+
+
+        pos = np.array([0., 0.])
         pos[1] = size_screen[1]*0.98-100
-        size = np.array([1000, 50])
-        pg.draw.rect(surface_fond, (255,255,255,alpha), pg.Rect(*(pos-size/2), *size), border_radius=cst.border_radius)
-        pg.draw.rect(surface_fond, (0,0,0,255), pg.Rect(*(pos-size/2), *size), width=3, border_radius=cst.border_radius)
-        txt = cst.font_scores.render(f"Pressez \"Entrée\" pour continuer", True, (0,0,0))
-        surface_fond.blit(txt, pos-np.array(txt.get_size())/2)
+        bouton_continuer = Bouton((cst.largeur_carte*2, cst.hauteur_carte), "Continuer", size_txt_fac=0.5)
+        bouton_continuer.clickable = True
+        bouton_continuer.draw()
+        pos[0] = size_screen[0]/4
+        pos_continuer = pos - np.array(bouton_continuer.surface.get_size())/2
+        bouton_continuer.pos = pos_continuer.copy()
+        surface_fond.blit(bouton_continuer.surface, bouton_continuer.pos)
+        bouton_menu = Bouton((cst.largeur_carte*2, cst.hauteur_carte), "Menu", size_txt_fac=0.5)
+        bouton_menu.clickable = True
+        bouton_menu.draw()
+        pos[0] = 3*size_screen[0]/4
+        pos_menu = pos - np.array(bouton_menu.surface.get_size())/2
+        bouton_menu.pos = pos_menu.copy()
+        surface_fond.blit(bouton_menu.surface, bouton_menu.pos)
+
+        bouton_continuer.rect = bouton_continuer.surface.get_rect(topleft=bouton_continuer.pos)
+        bouton_continuer.masque = pg.mask.from_surface(bouton_continuer.surface)
+        bouton_menu.rect = bouton_menu.surface.get_rect(topleft=bouton_menu.pos)
+        bouton_menu.masque = pg.mask.from_surface(bouton_menu.surface)
 
         self.screen.blit(surface_fond, (0,0))
         pg.display.flip()
 
+        click = False
         while True:
             event = pg.event.wait()
             if event.type == pg.QUIT:
@@ -390,14 +429,82 @@ class Renderer():
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_RETURN:
                     break
+            if event.type == pg.MOUSEBUTTONUP:
+                if event.button == 1:
+                    click = True
 
+            self.screen.blit(surface_fond, (0,0))
 
+            bouton_continuer.check_hover()
+            bouton_menu.check_hover()
+            if bouton_continuer.hovered:
+                self.screen.blit(bouton_continuer.surface, bouton_continuer.pos-1)
+                if click:
+                    return "Continuer"
+            if bouton_menu.hovered:
+                self.screen.blit(bouton_menu.surface, bouton_menu.pos-1)
+                if click:
+                    return "Menu"
+
+            click = False
             pg.display.flip()
 
+    def menu(self):
+        self.init_background()
+        size_screen = self.screen.get_size()
+        surface_fond = pg.Surface(size_screen, pg.SRCALPHA, 32)
+        boutons = []
+        for i, nombre in enumerate(range(3, 8)):
+            pos = np.array([0., 0.])
+            pos[0] = i*size_screen[0]/7
+            pos[1] = size_screen[1]*0.6-100
+            bouton = Bouton((cst.largeur_carte, cst.hauteur_carte), f"{nombre}", size_txt_fac=0.5)
+            bouton.nombre = nombre
+            bouton.clickable = True
+            bouton.draw()
+            pos_continuer = pos - np.array(bouton.surface.get_size())/2
+            bouton.pos = pos_continuer.copy()
+            bouton.rect = bouton.surface.get_rect(topleft=bouton.pos)
+            bouton.masque = pg.mask.from_surface(bouton.surface)
+
+            boutons.append(bouton)
+
+        for bouton in boutons:
+            surface_fond.blit(bouton.surface, bouton.pos)
+
+        self.screen.blit(surface_fond, (0,0))
+        pg.display.flip()
+
+        click = False
+        while True:
+            event = pg.event.wait()
+            if event.type == pg.QUIT:
+                pg.quit()
+                sys.exit()
+            if event.type == pg.KEYDOWN:
+                if event.key == pg.K_RETURN:
+                    break
+            if event.type == pg.MOUSEBUTTONUP:
+                if event.button == 1:
+                    click = True
+
+            self.screen.blit(surface_fond, (0,0))
+
+            for bouton in boutons:
+                bouton.check_hover()
+                if bouton.hovered:
+                    self.screen.blit(bouton.surface, bouton.pos-1)
+                    if click:
+                        return bouton.nombre
+
+            click = False
+            pg.display.flip()
+
+        return self.jeu.nombre_joueurs
 
 
 class Bouton():
-    def __init__(self, dims_carte, texte=""):
+    def __init__(self, dims_carte, texte="", size_txt_fac=1.):
         self.is_clicked = False
         self.clickable = False
         self.hovered = False
@@ -405,6 +512,8 @@ class Bouton():
         self.pos = None
         self.dims_carte = dims_carte
         self.action = None
+        size_txt = int(size_txt_fac*1.3*self.dims_carte[0]*cst.largeur_boutton_fac/7)
+        self.font = pg.font.SysFont("Comic sans", size_txt)
 
         self.surface = pg.Surface((dims_carte[0]*cst.largeur_boutton_fac, dims_carte[1]*cst.hauteur_boutton_fac), pg.SRCALPHA, 32)
         self.surface_screen = None
@@ -422,7 +531,19 @@ class Bouton():
         pg.draw.rect(self.surface, color, pg.Rect(0, 0, largeur_bouton, hauteur_bouton), border_radius=int(0.5*cst.border_radius))
         pg.draw.rect(self.surface, (0,0,0), pg.Rect(0, 0, largeur_bouton, hauteur_bouton), int(epaisseur_ligne_sep*cst.scale_cartes/30), border_radius=int(0.5*cst.border_radius))
 
-        font = pg.font.SysFont("Arial", int(1.3*self.dims_carte[0]*cst.largeur_boutton_fac/7))
+        font = self.font
         text_surface = font.render(self.texte, False, (0, 0, 0))
         pos = [(largeur_bouton-text_surface.get_width())/2, (hauteur_bouton-text_surface.get_height())/2]
         self.surface.blit(text_surface, pos)
+
+    def check_hover(self):
+        pos = pg.mouse.get_pos()
+        if self.rect is not None and self.masque is not None:
+            pos_in_mask = pos[0] - self.pos[0], pos[1] - self.pos[1]
+            if self.rect.collidepoint(*pos):
+                if self.masque.get_at(pos_in_mask):
+                    self.hovered = True
+                else:
+                    self.hovered = False
+            else:
+                self.hovered = False

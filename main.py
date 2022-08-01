@@ -25,8 +25,7 @@ class Jeu:
         self.tour = 1
         self.age = 1
         self.game_ended = False
-        self.dernier_tour = len([carte for carte in cartes if carte.age == 1 and carte.nb_joueurs <= self.nombre_joueurs])//self.nombre_joueurs - 1
-        self.cartes_initialisees = False
+        self.dernier_tour = 6  #len([carte for carte in cartes if carte.age == 1 and carte.nb_joueurs <= self.nombre_joueurs])//self.nombre_joueurs - 1
 
         self.auto = auto
         self.time_wait = 0.000001 #s
@@ -35,6 +34,7 @@ class Jeu:
         self.GUI = GUI
         if self.GUI:
             self.renderer = Renderer(self)
+            self.draw_all()
 
     def init_partie(self):
         idx_merveille = np.random.choice(list(range(7)), self.nombre_joueurs, replace=False)*2
@@ -301,8 +301,10 @@ class Jeu:
         if self.age == 4:
             self.comptage_points()
             self.game_ended = True
-            if self.GUI:
-                self.renderer.end_game(self)
+            if self.GUI and not self.auto:
+                choix = self.renderer.end_game(self)
+                if choix == "Menu":
+                    self.nombre_joueurs = self.renderer.menu()
 
     def reset(self):
         self.joueurs = []
@@ -313,17 +315,18 @@ class Jeu:
         self.age = 1
         self.game_ended = False
 
-        for carte in self.cartes:
-            carte.construite = False
-            carte.rendered_cite = False
-            carte.rendered_main = False
-        for merveille in self.merveilles:
-            merveille.surface_screen = None
-            for etage in merveille.etages:
-                etage.done = False
-                etage.rendered = False
-                etage.draw()
-                etage.surface_screen = None
+        if self.GUI:
+            for carte in self.cartes:
+                carte.construite = False
+                carte.rendered_cite = False
+                carte.rendered_main = False
+            for merveille in self.merveilles:
+                merveille.surface_screen = None
+                for etage in merveille.etages:
+                    etage.done = False
+                    etage.rendered = False
+                    etage.draw()
+                    etage.surface_screen = None
 
 
         idx_merveille = np.random.choice(list(range(7)), self.nombre_joueurs, replace=False)*2
@@ -484,9 +487,6 @@ class Jeu:
         for joueur in self.joueurs:
             joueur.actions_possibles(self)
         if self.GUI:
-            if not self.cartes_initialisees:
-                self.cartes_initialisees = True
-                self.draw_all()
             self.renderer.render()
 
         while running:
@@ -571,6 +571,12 @@ class Jeu:
             if self.game_ended:
                 running = False
 
+    def run(self, nombre_runs=10000000):
+        for i in range(nombre_runs):
+            print("Jeu", i)
+            jeu.run_game()
+            jeu.reset()
+        pg.quit()
 
 
 
@@ -579,17 +585,7 @@ arr_scores = []
 
 # Profiler = pprofile.Profile()
 # with Profiler:
-for i in range(100):
-    print("Jeu", i)
-    jeu.run_game()
-
-    scores = jeu.scores
-    for s in scores:
-        arr_scores.append(s)
-
-    jeu.reset()
-pg.quit()
-
+jeu.run(nombre_runs=100)
 # Profiler.dump_stats("Benchmark.txt")
 # pause()
 
