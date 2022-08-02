@@ -136,6 +136,7 @@ images = {
     rond_score: pg.image.load("Images/Elements_cartes/Effets/Rond_scores.png"),
     triangle_score: pg.image.load("Images/Elements_cartes/Effets/Triangle_score.png"),
     etoile_score: pg.image.load("Images/Elements_cartes/Effets/Etoile_scores.png"),
+    somme: pg.image.load("Images/Elements_cartes/Effets/Sigma_scores.png"),
     croix: pg.image.load("Images/Elements_cartes/Effets/Croix.png"),
 }
 

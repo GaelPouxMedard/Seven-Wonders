@@ -491,7 +491,7 @@ class Jeu:
 
     def run_game(self):
         self.reset()
-        running = True
+
         self.game_ended = False
         last = 0
         play_round = False
@@ -508,6 +508,7 @@ class Jeu:
             bouton_quit = BoutonQuit(self.renderer.screen)
             bouton_quit.draw()
             self.renderer.render()
+            self.flip()
 
         while True:
             if self.GUI:

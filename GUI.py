@@ -286,7 +286,7 @@ class Renderer():
         pg.draw.rect(surface_fond, (255,255,255,alpha), pg.Rect(*marges, *size_screen*props), border_radius=cst.border_radius)
         pg.draw.rect(surface_fond, (0,0,0,alpha), pg.Rect(*marges, *size_screen*props), width, border_radius=cst.border_radius)
 
-        for i in range(1, 9):
+        for i in range(1, 10):
             if i == 2:
                 img = cst.images[cst.merveille]
                 pos = np.array((marges[0]/2 + largeur_colonne*2/2, marges[1] + (i-1)*hauteur_ligne)+hauteur_ligne/2)
@@ -323,6 +323,11 @@ class Renderer():
             elif i == 8:
                 pg.draw.rect(surface_fond, (112,102,165,alpha), (marges[0], marges[1] + (i-1)*hauteur_ligne, 2*largeur_colonne, hauteur_ligne))
                 img = cst.images[cst.etoile_score]
+                pos = np.array((marges[0]/2 + largeur_colonne*2/2, marges[1] + (i-1)*hauteur_ligne)+hauteur_ligne/2)
+                pos -= np.array(img.get_size())/2
+                surface_fond.blit(img, pos)
+            elif i == 9:
+                img = cst.images[cst.somme]
                 pos = np.array((marges[0]/2 + largeur_colonne*2/2, marges[1] + (i-1)*hauteur_ligne)+hauteur_ligne/2)
                 pos -= np.array(img.get_size())/2
                 surface_fond.blit(img, pos)
@@ -391,7 +396,7 @@ class Renderer():
             if i==2:
                 w = 3*width
             pg.draw.line(surface_fond, (0,0,0,alpha), (marges[0]+i*largeur_colonne, marges[1]), (marges[0]+i*largeur_colonne, marges[1]+int((props[1])*size_screen[1])), width=w)
-        for i in range(0, 10):
+        for i in range(1, 9):
             w = width
             if i==1 or i==8:
                 w = 3*width
@@ -443,10 +448,12 @@ class Renderer():
                         pg.quit()
                         sys.exit()
 
-            self.screen.blit(surface_fond, (0,0))
 
-            bouton_continuer.check_hover()
-            bouton_menu.check_hover()
+            change_continuer = bouton_continuer.check_hover()
+            change_menu = bouton_menu.check_hover()
+            if change_menu or change_continuer:
+                self.render()
+                self.screen.blit(surface_fond, (0,0))
             if bouton_continuer.hovered:
                 self.screen.blit(bouton_continuer.surface, bouton_continuer.pos-1)
                 if click:
@@ -471,6 +478,7 @@ class Renderer():
         pos[1] = size_screen[1]*0.5
 
         bouton_texte = Bouton(((largeur_bouton+espacement)*5+largeur_bouton, hauteur_bouton), f"Nombre de joueurs", size_txt_fac=0.2)
+        bouton_texte.clickable = True
         bouton_texte.draw()
         bouton_texte.pos = (int(size_screen[0]/2+(-2.0)*(largeur_bouton+espacement)), size_screen[1]*0.3)
         surface_fond.blit(bouton_texte.surface, bouton_texte.pos)
@@ -514,11 +522,13 @@ class Renderer():
                         pg.quit()
                         sys.exit()
 
-            self.screen.blit(surface_fond, (0,0))
 
 
             for bouton in boutons:
-                bouton.check_hover()
+                change = bouton.check_hover()
+                if change:
+                    self.init_background()
+                    self.screen.blit(surface_fond, (0,0))
                 if bouton.hovered:
                     self.screen.blit(bouton.surface, bouton.pos-1)
                     if click:
@@ -570,15 +580,20 @@ class Bouton():
 
     def check_hover(self):
         pos = pg.mouse.get_pos()
+        change = False
         if self.rect is not None and self.masque is not None:
             pos_in_mask = pos[0] - self.pos[0], pos[1] - self.pos[1]
             if self.rect.collidepoint(*pos):
                 if self.masque.get_at(pos_in_mask):
+                    if not self.hovered: change = True
                     self.hovered = True
                 else:
+                    if self.hovered: change = True
                     self.hovered = False
             else:
+                if self.hovered: change = True
                 self.hovered = False
+        return change
 
 class BoutonQuit():
     def __init__(self, screen):
