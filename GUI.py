@@ -542,7 +542,7 @@ class Bouton():
         size_txt = int(size_txt_fac*1.*self.dims_carte[0]*cst.largeur_boutton_fac/7)
         self.font = pg.font.SysFont("Comic sans", size_txt)
 
-        self.surface = pg.Surface((dims_carte[0]*cst.largeur_boutton_fac, dims_carte[1]*cst.hauteur_boutton_fac), pg.SRCALPHA, 32)
+        self.surface = pg.Surface((dims_carte[0]*cst.largeur_boutton_fac+cst.decalage_ombre, dims_carte[1]*cst.hauteur_boutton_fac+cst.decalage_ombre), pg.SRCALPHA, 32)
         self.surface_screen = None
         self.masque = None
         self.rect = None
@@ -552,11 +552,16 @@ class Bouton():
         if not self.clickable:
             color = (255, 255, 255, 50)
 
+
         largeur_bouton, hauteur_bouton = self.dims_carte[0]*cst.largeur_boutton_fac, self.dims_carte[1]*cst.hauteur_boutton_fac
 
         epaisseur_ligne_sep = 4
+
+        decalage_ombre = cst.decalage_ombre
+        pg.draw.rect(self.surface, (0,0,0,130), pg.Rect(decalage_ombre, decalage_ombre, largeur_bouton, hauteur_bouton), border_radius=int(0.5*cst.border_radius))
+
         pg.draw.rect(self.surface, color, pg.Rect(0, 0, largeur_bouton, hauteur_bouton), border_radius=int(0.5*cst.border_radius))
-        pg.draw.rect(self.surface, (0,0,0), pg.Rect(0, 0, largeur_bouton, hauteur_bouton), int(epaisseur_ligne_sep*cst.scale_cartes/30), border_radius=int(0.5*cst.border_radius))
+        pg.draw.rect(self.surface, (0,0,0), pg.Rect(0, 0, largeur_bouton, hauteur_bouton), int(0.5*epaisseur_ligne_sep*cst.scale_cartes/30), border_radius=int(0.5*cst.border_radius))
 
         font = self.font
         text_surface = font.render(self.texte, False, (0, 0, 0))

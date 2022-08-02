@@ -97,6 +97,7 @@ facteur_arrondi_cartes = 20
 border_radius = int(facteur_arrondi_cartes*scale_cartes/30)
 zoom_carte = 3.5
 croix = "croix"
+decalage_ombre = 10
 
 largeur_boutton_fac = 0.70
 hauteur_boutton_fac = 0.15

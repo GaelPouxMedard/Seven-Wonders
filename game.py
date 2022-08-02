@@ -545,10 +545,14 @@ class Carte:
         epaisseur_ligne_sep = 4
 
         if not draw_manual:
-            self.surface = pg.image.load(f"Images/Cartes/Age {self.age}/{self.nom.replace('-', '_').capitalize()}.png")
-            self.surface = pg.transform.smoothscale(self.surface, (cst.largeur_carte, cst.hauteur_carte))
-            pg.draw.rect(self.surface, pg.Color("black"), pg.Rect(0, 0, cst.largeur_carte, cst.hauteur_carte), int(epaisseur_ligne_sep*cst.scale_cartes/60), border_radius=int(0.55*cst.border_radius))
+            decalage_ombre = cst.decalage_ombre
+            self.surface = pg.Surface((cst.largeur_carte+decalage_ombre, cst.hauteur_carte+decalage_ombre), pg.SRCALPHA, 32)
+            pg.draw.rect(self.surface, (0,0,0,130), pg.Rect(decalage_ombre, decalage_ombre, cst.largeur_carte, cst.hauteur_carte), border_radius=int(0.55*cst.border_radius))
 
+            img = pg.image.load(f"Images/Cartes/Age {self.age}/{self.nom.replace('-', '_').capitalize()}.png")
+            img = pg.transform.smoothscale(img, (cst.largeur_carte, cst.hauteur_carte))
+            self.surface.blit(img, (0,0))
+            pg.draw.rect(self.surface, pg.Color("black"), pg.Rect(0, 0, cst.largeur_carte, cst.hauteur_carte), int(epaisseur_ligne_sep*cst.scale_cartes/60), border_radius=int(0.55*cst.border_radius))
 
         else:
             color = pg.Color(cst.couleurs_rvb[self.couleur])
@@ -718,9 +722,13 @@ class Merveille:
         draw_manual = False
 
         if not draw_manual:
-            self.surface = pg.image.load(f"Images/Cartes/Merveilles/{self.nom.replace('-', '_').capitalize()}_étiré.png").convert_alpha()
-            self.surface = pg.transform.smoothscale(self.surface, (cst.largeur_merveille, cst.hauteur_merveille))
-            pg.draw.rect(self.surface, pg.Color("black"), pg.Rect(0, 0, cst.largeur_merveille, cst.hauteur_carte), int(3*cst.scale_cartes/30))
+            decalage_ombre = cst.decalage_ombre
+            self.surface = pg.Surface((cst.largeur_merveille+decalage_ombre, cst.hauteur_merveille+decalage_ombre), pg.SRCALPHA, 32)
+            pg.draw.rect(self.surface, (0,0,0,130), pg.Rect(decalage_ombre, decalage_ombre, cst.largeur_merveille, cst.hauteur_merveille), border_radius=int(0.55*cst.border_radius))
+
+            img = pg.image.load(f"Images/Cartes/Merveilles/{self.nom.replace('-', '_').capitalize()}_étiré.png").convert_alpha()
+            img = pg.transform.smoothscale(img, (cst.largeur_merveille, cst.hauteur_merveille))
+            self.surface.blit(img, (0,0))
 
         else:
             color = pg.Color(pg.Color("gray"))
