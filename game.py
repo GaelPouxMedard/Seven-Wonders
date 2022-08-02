@@ -761,7 +761,7 @@ class Merveille:
         self.surface_avec_infos = None
 
     def draw_infos(self, joueur, unzoom):
-        largeur_merveille, hauteur_merveille = cst.largeur_merveille*unzoom, cst.hauteur_merveille*unzoom
+        largeur_merveille, hauteur_merveille = (cst.largeur_merveille+cst.decalage_ombre)*unzoom, (cst.hauteur_merveille+cst.decalage_ombre)*unzoom
 
         self.surface_avec_infos = pg.Surface((largeur_merveille, hauteur_merveille), pg.SRCALPHA, 32)
         self.surface_avec_infos.fill((0,0,0,0))

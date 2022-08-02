@@ -8,7 +8,7 @@ class Renderer():
     def __init__(self, jeu):
         self.jeu = jeu
         pg.init()
-        self.screen = pg.display.set_mode((0,0))#, pg.RESIZABLE)
+        self.screen = pg.display.set_mode((0, 0))#, pg.RESIZABLE)
         if sys.platform == "win32":
             HWND = pg.display.get_wm_info()['window']
             SW_MAXIMIZE = 3
@@ -303,25 +303,25 @@ class Renderer():
                 pos -= np.array(img.get_size())/2
                 surface_fond.blit(img, pos)
             elif i == 5:
-                pg.draw.rect(surface_fond, (85,157,206,alpha), (marges[0], marges[1] + (i-1)*hauteur_ligne, 2*largeur_colonne, hauteur_ligne))
+                pg.draw.rect(surface_fond, (16,143,211,alpha), (marges[0], marges[1] + (i-1)*hauteur_ligne, 2*largeur_colonne, hauteur_ligne))
                 img = cst.images[cst.trait_score]
                 pos = np.array((marges[0]/2 + largeur_colonne*2/2, marges[1] + (i-1)*hauteur_ligne)+hauteur_ligne/2)
                 pos -= np.array(img.get_size())/2
                 surface_fond.blit(img, pos)
             elif i == 6:
-                pg.draw.rect(surface_fond, (242,173,80,alpha), (marges[0], marges[1] + (i-1)*hauteur_ligne, 2*largeur_colonne, hauteur_ligne))
+                pg.draw.rect(surface_fond, (246,154,35,alpha), (marges[0], marges[1] + (i-1)*hauteur_ligne, 2*largeur_colonne, hauteur_ligne))
                 img = cst.images[cst.rond_score]
                 pos = np.array((marges[0]/2 + largeur_colonne*2/2, marges[1] + (i-1)*hauteur_ligne)+hauteur_ligne/2)
                 pos -= np.array(img.get_size())/2
                 surface_fond.blit(img, pos)
             elif i == 7:
-                pg.draw.rect(surface_fond, (100,160,100,alpha), (marges[0], marges[1] + (i-1)*hauteur_ligne, 2*largeur_colonne, hauteur_ligne))
+                pg.draw.rect(surface_fond, (66,176,40,alpha), (marges[0], marges[1] + (i-1)*hauteur_ligne, 2*largeur_colonne, hauteur_ligne))
                 img = cst.images[cst.triangle_score]
                 pos = np.array((marges[0]/2 + largeur_colonne*2/2, marges[1] + (i-1)*hauteur_ligne)+hauteur_ligne/2)
                 pos -= np.array(img.get_size())/2
                 surface_fond.blit(img, pos)
             elif i == 8:
-                pg.draw.rect(surface_fond, (112,102,165,alpha), (marges[0], marges[1] + (i-1)*hauteur_ligne, 2*largeur_colonne, hauteur_ligne))
+                pg.draw.rect(surface_fond, (105,85,175,alpha), (marges[0], marges[1] + (i-1)*hauteur_ligne, 2*largeur_colonne, hauteur_ligne))
                 img = cst.images[cst.etoile_score]
                 pos = np.array((marges[0]/2 + largeur_colonne*2/2, marges[1] + (i-1)*hauteur_ligne)+hauteur_ligne/2)
                 pos -= np.array(img.get_size())/2
@@ -404,7 +404,7 @@ class Renderer():
 
 
         pos = np.array([0., 0.])
-        pos[1] = size_screen[1]*0.98-100
+        pos[1] = size_screen[1]*0.9
         bouton_continuer = Bouton((cst.largeur_carte*2, cst.hauteur_carte), "Continuer", size_txt_fac=0.5)
         bouton_continuer.clickable = True
         bouton_continuer.draw()

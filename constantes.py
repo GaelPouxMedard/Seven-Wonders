@@ -79,25 +79,29 @@ couleurs_rvb = {
     jaune: (230, 170, 50),
 }
 
+import ctypes
+user32 = ctypes.windll.user32
+screen_size = [user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)]
 
+zoom_global = screen_size[0]/1536  # 1536 = Ma resolution de référence
 
-scale_cartes = 50
+scale_cartes = 50*zoom_global
 
 propline_sep_carte = 0.25
 espace_entre_cartes = 1*scale_cartes*0.3
 espace_entre_cartes_vertical = 1*scale_cartes
 largeur_carte, hauteur_carte = 6.5*scale_cartes, 10*scale_cartes
-marges_board = 1000
+marges_board = 1000*zoom_global
 largeur_board = (largeur_carte+espace_entre_cartes)*len(couleurs)
 hauteur_board = (hauteur_carte+espace_entre_cartes)*4#4
-hauteur_merveille = hauteur_carte  # 13.5
-largeur_merveille =  hauteur_merveille*764.2/219.2 #0.8*7*(largeur_carte+espace_entre_cartes)  # 27.5
+hauteur_merveille = hauteur_carte
+largeur_merveille =  hauteur_merveille*764.2/219.2
 prop_hauteur_etage = 0.3
 facteur_arrondi_cartes = 20
 border_radius = int(facteur_arrondi_cartes*scale_cartes/30)
 zoom_carte = 3.5
 croix = "croix"
-decalage_ombre = 10
+decalage_ombre = 10*zoom_global
 
 largeur_boutton_fac = 0.70
 hauteur_boutton_fac = 0.15
